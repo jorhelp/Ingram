@@ -33,8 +33,8 @@ class MasScaner(Base):
                 for i in [line.split()[-2] for line in tf if not line.startswith('#')]:
                     of.write(i + '\n')
 
-    def scan(self, port=80, rate=5000) -> None:
-        os.system(f"sudo masscan -iL {self.in_file} -p{port} --rate {rate} -oL {self.tmp}")
+    def __call__(self, args) -> None:
+        os.system(f"sudo masscan -iL {self.in_file} -p{args.port} --rate {args.rate} -oL {self.tmp}")
         self.parse(self.tmp)
 
 

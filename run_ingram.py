@@ -51,8 +51,12 @@ def run(args):
             elif flag: printf(line.rstrip(), color=colors[count % len(colors)], bold=True)
 
     # scan
-    scn = scanner.CameraScanner(args.in_file, args.out_file)
-    scn(args)
+    if args.masscan:
+        scn = scanner.MasScaner(args.in_file, args.out_file)
+        scn(args)
+    else:
+        scn = scanner.CameraScanner(args.in_file, args.out_file)
+        scn(args)
 
     # finished
     if args.send_msg:
