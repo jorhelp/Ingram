@@ -112,6 +112,6 @@ python3 -Bu show/show_rtsp/show_all.py cameras_file
 
 ## Acknowledgements & References
 
-Thanks to [Aiminsun](https://github.com/Aiminsun/CVE-2021-36260) for CVE-2021-36260
-Thanks to [chrisjd20](https://github.com/chrisjd20/hikvision_CVE-2017-7921_auth_bypass_config_decryptor) for hidvision config file decryptor
-Thanks to [metowolf](https://github.com/metowolf/iplist) for ip list
+Thanks to [Aiminsun](https://github.com/Aiminsun/CVE-2021-36260) for CVE-2021-36260  
+Thanks to [chrisjd20](https://github.com/chrisjd20/hikvision_CVE-2017-7921_auth_bypass_config_decryptor) for hidvision config file decryptor  
+Thanks to [metowolf](https://github.com/metowolf/iplist) for ip list  
