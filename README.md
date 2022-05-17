@@ -22,7 +22,7 @@
 
 ## 简介
 
-学校、医院、商场、餐厅等等这些设备维护不太完善的地方，总会存在各种漏洞，要么是不及时打补丁，要么是图省事使用弱口令
+学校、医院、商场、餐厅等等这些设备维护不太完善的地方，总会存在各种漏洞，要么是不及时打补丁，要么是图省事使用弱口令  
 本工具可以使用多线程批量检测局域网或公网上的摄像头是否存在漏洞，以便于及时修复，提高设备安全性
 
 
@@ -63,7 +63,7 @@ pip install -r requirements.txt
 
 ### (可选)借助 masscan 进行提速
 
-如果对所有ip进行扫描是非常耗时的，我们可以使用端口扫描工具先找到端口开房的主机，然后对这部分主机进行漏洞扫描，masscan工具需要自行安装
+如果对所有ip进行扫描是非常耗时的，我们可以使用端口扫描工具先找到端口开放的主机，然后对这部分主机进行漏洞扫描，masscan工具需要自行安装
 ```shell
 ./run_Ingram.py --in_file statics/iplist/data/country/JP.txt --out_file port80 --masscan --port 80 --rate 5000
 ./run_Ingram.py --in_file port80 --out_file results --all --th_num 80
