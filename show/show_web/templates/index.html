@@ -1,0 +1,54 @@
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN / DENY ">
+    <title>{{context['title']}}</title>
+
+    <style>
+        iframe {
+            width: 960px;
+            height: 660px;
+            transform-origin: left top;
+            transform: scale(0.45);
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 0 20px 10px rgba(0, 0, 0, 0.42);
+        }
+
+        #box {
+            float: left;
+            width: 430px;
+            height: 320px;
+            margin: 6px;
+        }
+        #box-title{
+            margin: 3px;
+            padding: 0;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- previous and next page button -->
+    <div style="text-align: center; margin: 10px;">
+        {% if context['page_num'] != 0 %}
+        <a href="{{ url_for('get_page', page_num=context['page_num'] - 1) }}">Previous</a>
+        {% endif %}
+        {% if context['page_num'] < context['page_count'] %}
+        <a href="{{ url_for('get_page', page_num=context['page_num'] + 1) }}">Next</a>
+        {% endif %}
+    </div>
+
+    <!-- container of boxes -->
+    <div style="width: 100%;">
+        {% for ip in context['ip_list'] %}
+        <div id="box"L>
+            <div id="box-title">
+                <a href="http://{{ip}}" target=_blank>{{ip}}</a>
+            </div>
+            <iframe scrolling=no src="http://{{ip}}" security="restricted" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        {% endfor %}
+    </div>
+
+</body>
