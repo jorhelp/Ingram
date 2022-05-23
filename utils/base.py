@@ -89,7 +89,7 @@ def process_bar(total, processed, found=0, timer=False, start_time=0):
     _found = 'Found ' + output_formatter(found, color='red', bold=True) if found else ''
     _count = f"{_processed}/{_total} {_found}"
 
-    if processed == total - 1:
+    if processed == total:
         print(f"{_icon} {_count}  {_time}")
     else:
         print(f"{_icon} {_count}  {_time}", end='\r')
