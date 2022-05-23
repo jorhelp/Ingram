@@ -56,17 +56,18 @@ class CameraScanner(Base):
         with open(self.in_file, 'r') as f:
             for line in f:
                 if line.strip():
-                    if '-' in line or '/' in line:
-                        self.ip_list.extend(get_all_ip(line.strip()))
-                    else:
-                        self.ip_list.append(line.strip())
+                    if not line.startswith('#'):
+                        if '-' in line or '/' in line:
+                            self.ip_list.extend(get_all_ip(line.strip()))
+                        else:
+                            self.ip_list.append(line.strip())
         self.total = len(self.ip_list)
 
     def _step(self, *args, **kwargs):
         with self.lock:
             if kwargs['found']:
                 self.found += 1
-            process_bar(self.total, self.done, self.found, timer=True, start_time=self.start_time)
+            process_bar(self.total, self.done + 1, self.found, timer=True, start_time=self.start_time)
 
     def scan(self, ip):
         for mod in self.modules:
