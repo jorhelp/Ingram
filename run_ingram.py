@@ -22,6 +22,7 @@ def get_parser():
     parser.add_argument('--all', action='store_true')
     parser.add_argument('--masscan', action='store_true')
     parser.add_argument('--hik_weak', action='store_true')
+    parser.add_argument('--dahua_weak', action='store_true')
     parser.add_argument('--cve_2021_36260', action='store_true')
     parser.add_argument('--cve_2017_7921', action='store_true')
     parser.add_argument('--cve_2020_25078', action='store_true')
