@@ -86,11 +86,12 @@ class CameraScanner(Base):
         hik_weak_partial = partial(hik_weak, users=args.users, passwords=args.passwords)
         dahua_weak_partial = partial(dahua_weak, users=args.users, passwords=args.passwords)
         if args.all:
-            self.modules.extend([cve_2017_7921, cve_2021_36260, cve_2020_25078, hik_weak_partial, dahua_weak_partial])
+            self.modules.extend([cve_2017_7921, cve_2021_36260, cve_2020_25078, cve_2021_33044, hik_weak_partial, dahua_weak_partial])
         else:
             if args.hik_weak: self.modules.append(hik_weak_partial)
             if args.dahua_weak: self.modules.append(dahua_weak_partial)
             if args.cve_2017_7921: self.modules.append(cve_2017_7921)
             if args.cve_2021_36260: self.modules.append(cve_2021_36260)
             if args.cve_2020_25078: self.modules.append(cve_2020_25078)
+            if args.cve_2021_33044: self.modules.append(cve_2021_33044)
         multi_thread(self.scan, self.ip_list, processes=args.th_num)
