@@ -150,7 +150,7 @@ def hb_weak(ip: str, users: list=['admin'], passwords: list=['888888']) -> list:
     for user in users:
         for p in passwords:
             r = requests.get(f"http://{ip}/ISAPI/Security/userCheck", verify=False, headers=headers, timeout=timeout, auth=(user, p))
-            if r.status_code == 200 and '200' in r.text:
+            if r.status_code == 200 and 'userCheck' in r.text and 'statusValue' in r.text and '200' in r.text:
                 return [True, 'HB-Tech', 'weak pass', f"{user}:{p}"]
     return [False, 'HB-Tech', 'weak pass']
 
