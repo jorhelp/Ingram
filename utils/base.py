@@ -14,7 +14,7 @@ def run_time(func):
     def wrapper(*args, **kwargs):
         t0 = time.time()
         res = func(*args, **kwargs)
-        print(f">Time used: {time.time() - t0} seconds")
+        print(f"\n>Time used: {time.time() - t0:.2f} seconds")
         return res
     return wrapper
 
@@ -65,40 +65,40 @@ def printf(info, color='green', bold=False, underline=False, flash=False):
     print(output_formatter(info, color=color, bold=bold, underline=underline, flash=flash))
 
 
-def process_bar(total, processed, found=0, timer=False, start_time=0):
-    """since tqdm cant be used when we use mutiprocess"""
-    # icon
-    icon_list = '⇐⇖⇑⇗⇒⇘⇓⇙'
-    idx = processed % len(icon_list)
-    _icon = output_formatter(icon_list[idx], color='green', bold=True)
-    _icon = f"[{_icon}]"
+def process_bar(cidx=[0]):
+    def wrapper(total, processed, found=0, timer=False, start_time=0):
+        """since tqdm cant be used when we use mutiprocess"""
+        # icon
+        icon_list = '⇐⇖⇑⇗⇒⇘⇓⇙'
+        _icon = output_formatter(icon_list[cidx[0]], color='green', bold=True)
+        cidx[0] = cidx[0] + 1 if cidx[0] < len(icon_list) - 1 else 0
+        _icon = f"[{_icon}]"
 
-    # time
-    if timer and start_time != 0:
-        time_used = round(time.time() - start_time, 1)
-        if processed == 0:  # avoid the devision number is zero
-            processed = processed + 1
-        time_pred = round((time_used / (processed)) * total, 1)
-        time_used = output_formatter(time_used, color='white', bold=True)
-        time_pred = output_formatter(time_pred, color='white', bold=True)
-        _time = f"time: {time_used}s/{time_pred}s"
+        # time
+        if timer and start_time != 0:
+            time_used = round(time.time() - start_time, 1)
+            if processed == 0:  # avoid the devision number is zero
+                processed = processed + 1
+            time_pred = round((time_used / (processed)) * total, 1)
+            time_used = output_formatter(time_used, color='white', bold=True)
+            time_pred = output_formatter(time_pred, color='white', bold=True)
+            _time = f"time: {time_used}s/{time_pred}s"
 
-    # count
-    _total = output_formatter(total, color='blue', bold=True)
-    _processed = output_formatter(processed, color='blue', bold=True)
-    _found = 'Found ' + output_formatter(found, color='red', bold=True) if found else ''
-    _count = f"{_processed}/{_total} {_found}"
+        # count
+        _total = output_formatter(total, color='blue', bold=True)
+        _processed = output_formatter(processed, color='blue', bold=True)
+        _found = 'Found ' + output_formatter(found, color='red', bold=True) if found else ''
+        _count = f"{_processed}/{_total} {_found}"
 
-    if processed == total:
-        print(f"{_icon} {_count}  {_time}")
-    else:
-        print(f"{_icon} {_count}  {_time}", end='\r')
-    time.sleep(.1)
+        print(f"\r{_icon} {_count}  {_time}", end='')
+    return wrapper
 
 
 if __name__ == '__main__':
     t0 = time.time()
     found = 0
+    bar = process_bar()
     for i in range(1, 101):
         found += 1 if not i % 10 else 0
-        process_bar(100, i, found, timer=True, start_time=t0)
+        bar(100, i, found, timer=True, start_time=t0)
+        time.sleep(.1)

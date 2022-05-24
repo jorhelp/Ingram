@@ -49,6 +49,7 @@ class CameraScanner(Base):
         self.found = 0
         self.done = 0
         self.start_time = time.time()
+        self.bar = process_bar()
 
         self._get_ip()
 
@@ -67,7 +68,7 @@ class CameraScanner(Base):
         with self.lock:
             if kwargs['found']:
                 self.found += 1
-            process_bar(self.total, self.done + 1, self.found, timer=True, start_time=self.start_time)
+            self.bar(self.total, self.done + 1, self.found, timer=True, start_time=self.start_time)
 
     def scan(self, ip):
         for mod in self.modules:
@@ -79,18 +80,24 @@ class CameraScanner(Base):
                     save_res(self.out_file, [ip] + res[1:])
             except Exception as e: pass  # print(e)
             finally: self._step(found=found)
-        self.done += 1
+        with self.lock: self.done += 1
 
 
     def __call__(self, args):
         self.modules = []
         hik_weak_partial = partial(hik_weak, users=args.users, passwords=args.passwords)
         dahua_weak_partial = partial(dahua_weak, users=args.users, passwords=args.passwords)
+        cctv_weak_partial = partial(cctv_weak, users=args.users, passwords=args.passwords)
+        hb_weak_partial = partial(hb_weak, users=args.users, passwords=args.passwords)
+
         if args.all:
-            self.modules.extend([cve_2017_7921, cve_2021_36260, cve_2020_25078, cve_2021_33044, hik_weak_partial, dahua_weak_partial])
+            self.modules.extend([cve_2017_7921, cve_2021_36260, cve_2020_25078, cve_2021_33044])
+            self.modules.extend([hik_weak_partial, dahua_weak_partial, cctv_weak_partial, hb_weak_partial])
         else:
             if args.hik_weak: self.modules.append(hik_weak_partial)
             if args.dahua_weak: self.modules.append(dahua_weak_partial)
+            if args.cctv_weak: self.modules.append(cctv_weak_partial)
+            if args.hb_weak: self.modules.append(hb_weak_partial)
             if args.cve_2017_7921: self.modules.append(cve_2017_7921)
             if args.cve_2021_36260: self.modules.append(cve_2021_36260)
             if args.cve_2020_25078: self.modules.append(cve_2020_25078)
