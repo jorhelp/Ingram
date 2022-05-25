@@ -30,7 +30,7 @@
 
 ## 开始扫描
 
-<p style="color: red">确保 Python 版本大于等于 3.7 (Make sure Python >= 3.7)</p>
+***确保 Python 版本大于等于 3.7***
 
 克隆本项目，并安装依赖：
 ```shell
@@ -111,8 +111,9 @@ python3 -Bu show/show_rtsp/show_all.py cams_file
 ![](statics/imgs/show_rtsp.png)
 
 
-<h2 style="color: red">免责声明</h2>
-<p style="color: red">本工具仅供学习与安全检测，请勿用于非法用途，一切因本工具导致的法律后果均由使用者自己承担!!!</p>
+## 免责声明
+
+本工具仅供学习与安全检测，请勿用于非法用途，一切因本工具导致的法律后果均由使用者自己承担!!!
 
 
 ## Acknowledgements & References
