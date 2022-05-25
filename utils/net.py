@@ -7,8 +7,12 @@ def get_ip_segment(start: str, end: str) -> str:
     return IPy.IP(f"{start}-{end}", make_net=True).strNormal()
 
 
+def get_ip_seg_len(ip_seg: str) -> int:
+    return IPy.IP(ip_seg, make_net=True).len()
+
+
 def get_all_ip(ip_seg: str) -> list:
-    return [i.strNormal() for i in IPy.IP(f"{ip_seg}", make_net=True)]
+    return [i.strNormal() for i in IPy.IP(ip_seg, make_net=True)]
 
 
 def get_user_agent(name='random'):

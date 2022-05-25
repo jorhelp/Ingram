@@ -97,7 +97,7 @@ def process_bar(cidx=[0]):
         _found = 'Found ' + output_formatter(found, color='red', bold=True) if found else ''
         count = f"{_done}/{_total} ({_percent}) {_found}"
 
-        print(f"\r{icon} {count}  {_time}", end='')
+        print(f"\r{icon} {count}  {_time:<55}", end='')
     return wrapper
 
 
