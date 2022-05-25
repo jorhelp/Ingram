@@ -30,6 +30,8 @@
 
 ## 开始扫描
 
+<p style="color: red">确保 Python 版本大于等于 3.7 (Make sure Python >= 3.7)</p>
+
 克隆本项目，并安装依赖：
 ```shell
 git clone git@github.com:jorhelp/Ingram.git
@@ -37,18 +39,18 @@ cd Ingram
 pip install -r requirements.txt
 ```
 
-需要自行创建一个IP文件，每行一个条目，可以是单个ip，或IP段，下面的写法都是合法的：
+该工具的输入 `--in_file` 需要自行创建一个IP文件，每行一个条目，可以是单个ip，或IP段，下面的写法都是合法的：
 ```shell
 192.168.66.66
 10.0.0.0/8
 172.16.0.0-172.31.255.255
 ```
 
-当然，也可以直接使用statics目录下的IP文件，比如`statics/iplist/data/country/JP.txt`
+或者，也可以直接使用statics目录下的IP文件，比如`--in_file statics/iplist/data/country/JP.txt`
 
 使用 `--all` 参数扫描所有漏洞，线程数量 `--th_num` 根据网络情况自行调整：
 ```shell
-./run_Ingram.py --in_file statics/iplist/data/country/JP.txt --out_file results --all --th_num 80
+./run_Ingram.py --in_file 你的IP文件 --out_file 指定一个输出 --all --th_num 80
 ```
 
 或者指定只扫描某个漏洞:
@@ -59,7 +61,7 @@ pip install -r requirements.txt
 运行截图：
 ![](statics/imgs/run_time.png)
 
-结果展示（需要注意，cve-2021-36260漏洞无法提供用户名与密码，cve-2017-7921的用户名与密码在后面的一大串字符串中，需要自行查找）：
+结果展示 (需要注意，某些漏洞无法提供用户名与密码，例如 cve-2021-36260)：
 ![](statics/imgs/results.png)
 
 
@@ -90,26 +92,27 @@ def send_msg(content: str = "default content") -> Dict:
 
 ## 查看摄像头画面
 
-需要将存在漏洞的摄像头按照以下格式保存在文件中：
+可以直接从浏览器登录进行查看，或者使用我们提供的工具 `show/show_rtsp` 来批量查看。若批量查看，需要将创建一个文件，并将摄像头信息写进去，格式要求如下：
++ 每行一个camera，需要按照 `ip,用户名,密码` 的格式来写
++ 如果camera存在 `cve-2017-7921` 漏洞的话，也可以使用 `ip,cve-2017-7921` 格式，但是不建议这样做，因为这种方式展示的是一组图片，而不是视频，所以会明显卡顿
+
+下面是一个 cam 文件的样例：
 ```shell
 192.168.0.1,user,passwd
 192.168.0.2,cve-2017-7921
 ```
 
-是的，建议使用 `ip,用户名,密码` 的格式，如果设备存在 cve-2017-7921 漏洞的话，也可以使用 `ip,cve-2017-7921` 格式，但是不建议这样做，因为这种方式展示的是一组图片，而不是视频，所以会明显卡顿
-
 运行：
 ```shell
-python3 -Bu show/show_rtsp/show_all.py cameras_file
+python3 -Bu show/show_rtsp/show_all.py cams_file
 ```
 
 运行截图：
 ![](statics/imgs/show_rtsp.png)
 
 
-## 免责声明
-
-本工具仅供学习与安全检测，请勿用于非法用途，一切因本工具导致的法律后果均由使用者自己承担!!!
+<h2 style="color: red">免责声明</h2>
+<p style="color: red">本工具仅供学习与安全检测，请勿用于非法用途，一切因本工具导致的法律后果均由使用者自己承担!!!</p>
 
 
 ## Acknowledgements & References
