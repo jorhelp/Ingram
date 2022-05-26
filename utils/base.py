@@ -14,7 +14,7 @@ def run_time(func):
     def wrapper(*args, **kwargs):
         t0 = time.time()
         res = func(*args, **kwargs)
-        print(f"\n>Time used: {time.time() - t0:.2f} seconds")
+        print(f"\n>Time used: {time_formatter(time.time() - t0)}")
         return res
     return wrapper
 
