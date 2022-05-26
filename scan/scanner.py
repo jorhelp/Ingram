@@ -34,7 +34,7 @@ class MasScaner(Base):
                     of.write(i + '\n')
 
     def __call__(self, args) -> None:
-        os.system(f"sudo masscan -iL {self.in_file} -p{args.port} --rate {args.rate} -oL {self.tmp}")
+        os.system(f"sudo masscan --exclude 255.255.255.255 -iL {self.in_file} -p{args.port} --rate {args.rate} -oL {self.tmp}")
         self.parse(self.tmp)
 
 
