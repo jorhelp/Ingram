@@ -1,6 +1,7 @@
 IPy
 rtsp
 flask
+pillow
 requests
 wxpusher
 pycryptodome
