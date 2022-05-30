@@ -36,7 +36,7 @@ This tool can use multiple threads to batch detect whether there are vulnerabili
 git clone https://github.com/jorhelp/Ingram.git
 ```
 
-+ **Make sure the Python version you used is >= 3.7**, and install this packages by:
++ **Make sure the Python version you used is >= 3.7**, and install packages by:
 ```shell
 cd Ingram
 pip install -r requirements.txt
@@ -112,10 +112,10 @@ optional arguments:
 
 + All modules can be combined arbitrarily to scan, for example, if you want to scan Hikvision, then:
 ```shell
-./run_ingram.py --in TARGET --out OUT_DIR --hik_weak --cve_2017_7921 --2021_36260 --th_num 80
+./run_ingram.py --in TARGET --out OUT_DIR --hik_weak --cve_2017_7921 --cve-2021_36260 --th_num 80
 ```
 
-+ Direct scanning can be slow. You can use the Masscan to speed up. The Masscan needs to be installed in advance. For example, we find hosts with ports 80 and 8000 to 8008 open and scan them:
++ Direct scanning can be slow. You can use the Masscan to speed up. The Masscan needs to be installed in advance. For example, we find hosts whose port 80 and 8000 to 8008 opened and scan them:
 ```shell
 ./run_ingram.py --in TARGET --out OUT_DIR --masscan --port 80,8000-8008 --rate 5000
 ./run_ingram.py --in OUT_DIR/masscan_res --out OUT_DIR --all --th_num 80
@@ -127,10 +127,10 @@ optional arguments:
 
 ## Results
 
-+ The results are saved in the `OUT_DIR/results.csv` file, and the format is "ip,port,user,passwd,device,vulnerability":
++ The results are saved in the `OUT_DIR/results.csv` file, and each line is `ip,port,user,passwd,device,vulnerability`:
 ![](statics/imgs/results.png)
 
-+ Some camera's snapshots are saved in `OUT_DIR/snapshots/`:
++ Some camera's snapshots can be found in `OUT_DIR/snapshots/`:
 ![](statics/imgs/snapshots.png)
 
 
@@ -138,7 +138,7 @@ optional arguments:
 
 + You can log in directly from the browser to see the live screen.
   
-+ If you want to view the live in batch, we provided a script: `show/show_rtsp/show_all.py`, though it has some flaws:
++ If you want to view the live screen in batch, we provided a script: `show/show_rtsp/show_all.py`, though it has some flaws:
 ```shell
 python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results.csv
 ```
@@ -148,7 +148,7 @@ python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results.csv
 
 ## Disclaimer
 
-This tool is only for learning and safety testing, do not fucking use it for illegal purpose, all legal consequences caused by this tool will be borne by the user!!!
+This tool is only for learning and safety testing, do not fucking useing it for illegal purpose, all legal consequences caused by this tool will be borne by the user!!!
 
 
 ## Acknowledgements & References
