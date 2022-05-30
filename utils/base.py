@@ -1,12 +1,15 @@
 """Basic Utils"""
+import os
 import time
 from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
 
 
-def save_res(out_file: str, res: list) -> None:
-    """save a result record to file"""
-    with open(out_file, 'a') as f:
+def save_res(res: list, out_path: str) -> None:
+    """save a result record to file
+    format should be: [ip, port, user, passwd, device, vulnerability]
+    """
+    with open(os.path.join(out_path, 'results.csv'), 'a') as f:
         f.write(f"{','.join(res)}\n")
 
 

