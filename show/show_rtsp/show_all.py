@@ -12,6 +12,9 @@ with open(file, 'r') as f:
     items = [line.strip().split(',') for line in f if line.strip()]
 
 
+items = [i for i in items if i[-2] == 'Dahua' or i[-2] == 'Hikvision']
+items = [i for i in items if i[2] or i[-1] == 'cve-2017-7921']
+
 print()
 printf(f"there are {len(items)} cameras in file {file}", color='blue', bold=True, flash=True)
 printf("input any key to get another gruop cameras")
@@ -32,12 +35,12 @@ while items:
         for col in range(cols):
             if items:
                 cam = items.pop()
-                if len(cam) == 3:
-                    os.system(f"python3 -Bu {os.path.join(cwd, 'show_one_camera.py')} "
-                            f" --ip {cam[0]} --user {cam[1]} --passwd {cam[2]} --x {x} --y {y} --height {height}&")
-                elif len(cam) == 2 and cam[1].upper() == 'CVE-2017-7921':
+                if cam[-1] == 'cve-2017-7921':
                     os.system(f"python3 -Bu {os.path.join(cwd, 'show_cve_2017_7921.py')} "
                             f" --ip {cam[0]} --x {x} --y {y} --height {height}&")
+                else:
+                    os.system(f"python3 -Bu {os.path.join(cwd, 'show_one_camera.py')} "
+                            f" --ip {cam[0]} --user {cam[2]} --passwd {cam[3]} --x {x} --y {y} --height {height}&")
             else:
                 break
             x += 360

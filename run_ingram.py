@@ -15,12 +15,11 @@ from utils.wechat import send_msg
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--in_file', type=str, required=True, help='the input file')
-    parser.add_argument('--out_file', type=str, default='results', help='the dir where results saved')
+    parser.add_argument('--in_file', type=str, required=True, help='the targets will be scan')
+    parser.add_argument('--out_path', type=str, default='results', help='the path where results saved')
     parser.add_argument('--send_msg', action='store_true', help='send finished msg to you (by wechat or email)')
 
-    parser.add_argument('--all', action='store_true')
-    parser.add_argument('--masscan', action='store_true')
+    parser.add_argument('--all', action='store_true', help='scan all the modules of [hik_weak, dahua_weak, cve_...]')
     parser.add_argument('--hik_weak', action='store_true')
     parser.add_argument('--dahua_weak', action='store_true')
     parser.add_argument('--cctv_weak', action='store_true')
@@ -29,12 +28,11 @@ def get_parser():
     parser.add_argument('--cve_2021_33044', action='store_true')
     parser.add_argument('--cve_2017_7921', action='store_true')
     parser.add_argument('--cve_2020_25078', action='store_true')
+    parser.add_argument('--th_num', type=int, default=80, help='the processes num')
 
-    parser.add_argument('--port', type=int, default=80, help='masscan')
-    parser.add_argument('--rate', type=int, default=5000, help='masscan')
-    parser.add_argument('--th_num', type=int, default=32, help='hikvision')
-    parser.add_argument('--users', type=str, nargs='+', default=['admin'], help='weak pass users')
-    parser.add_argument('--passwords', type=str, nargs='+', default=['admin12345', 'asdf1234', '12345'], help='weak pass passwords')
+    parser.add_argument('--masscan', action='store_true', help='run massscan sanner')
+    parser.add_argument('--port', type=str, default=80, help='same as masscan port')
+    parser.add_argument('--rate', type=int, default=5000, help='same as masscan rate')
 
     args = parser.parse_args()
     return args
@@ -56,10 +54,10 @@ def run(args):
 
     # scan
     if args.masscan:
-        scn = scanner.MasScaner(args.in_file, args.out_file)
+        scn = scanner.MasScaner(args.in_file, args.out_path)
         scn(args)
     else:
-        scn = scanner.CameraScanner(args.in_file, args.out_file)
+        scn = scanner.CameraScanner(args.in_file, args.out_path)
         scn(args)
 
     # finished

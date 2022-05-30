@@ -20,100 +20,135 @@
 ```
 
 
-## 简介
+## Introduction
 
-学校、医院、商场、餐厅等等这些设备维护不太完善的地方，总会存在各种漏洞，要么是不及时打补丁，要么是图省事使用弱口令  
-本工具可以使用多线程批量检测局域网或公网上的摄像头是否存在漏洞，以便于及时修复，提高设备安全性  
+Schools, hospitals, shopping malls, restaurants, and other places where equipment is not well maintained, there will always be vulnerabilities, either because they are not patched in time or because weak passwords are used to save trouble.
 
-**仅在 Mac 与 Linux 测试成功，未在 Windows 平台进行测试**
+This tool can use multiple threads to batch detect whether there are vulnerabilities in the cameras on the local or public network, so as to repair them in time and improve device security.
+
+**Only successfully tested on Mac and Linux, but not on Windows!**
 
 
-## 开始扫描
+## Installation
 
-***确保 Python 版本大于等于 3.7***
-
-克隆本项目，并安装依赖：
++ Clone this repository by:
 ```shell
-git clone git@github.com:jorhelp/Ingram.git
+git clone https://github.com/jorhelp/Ingram.git
+```
+
++ **Make sure the Python version you used is >= 3.7**, and install this packages by:
+```shell
 cd Ingram
 pip install -r requirements.txt
 ```
 
-该工具的输入 `--in_file` 需要自行创建一个IP文件，每行一个条目，可以是单个ip，或IP段，下面的写法都是合法的：
-```shell
-192.168.66.66
-10.0.0.0/8
-172.16.0.0-172.31.255.255
+
+## Preparation
+
++ You should prepare a target file, which contains the ip addresses will be scanned. The following formats are allowed:
+```
+# Use '#' to comment (must have a single line!!)
+# Single ip
+192.168.0.1
+# Single ip with port
+192.168.0.2:80
+# IP segment with '/'
+192.168.0.0/16
+# IP segment with '-'
+192.168.0.0-192.168.255.255
 ```
 
-或者，也可以直接使用statics目录下的IP文件，比如`--in_file statics/iplist/data/country/JP.txt`
-
-使用 `--all` 参数扫描所有漏洞，线程数量 `--th_num` 根据网络情况自行调整：
-```shell
-./run_Ingram.py --in_file 你的IP文件 --out_file 指定一个输出 --all --th_num 80
++ The `utils/config.py` file already specifies some usernames and passwords to support weak password scanning. You can expand or decrease it:
+```python
+# camera
+USERS = ['admin']
+PASSWORDS = ['admin', 'admin12345', 'asdf1234', '12345admin', '12345abc']
 ```
 
-或者指定只扫描某个漏洞:
-```shell
-./run_Ingram.py --in_file statics/iplist/data/country/JP.txt --out_file results --cve_2017_7921 --th_num 80
++ (**Optional**) If you use wechat app, and want to get a reminder on your phone. You need to follow [wxpusher](https://wxpusher.zjiecode.com/docs/) instructions to get your *UID* and *APP_TOKEN*, and write them to `utils/config.py`:
+```python
+# wechat
+UIDS = ['This is your UID', 'This is another UID if you have', ...]
+TOKEN = 'This is your APP_TOKEN'
 ```
 
-运行截图：
++ (**Optional**) Email is not supported yet...
+
+
+## Run
+
+```shell
+optional arguments:
+  -h, --help           show this help message and exit
+  --in_file IN_FILE    the targets will be scan
+  --out_path OUT_PATH  the path where results saved
+  --send_msg           send finished msg to you (by wechat or email)
+  --all                scan all the modules of [hik_weak, dahua_weak, cve_...]
+  --hik_weak
+  --dahua_weak
+  --cctv_weak
+  --hb_weak
+  --cve_2021_36260
+  --cve_2021_33044
+  --cve_2017_7921
+  --cve_2020_25078
+  --th_num TH_NUM      the processes num
+  --masscan            run massscan sanner
+  --port PORT          same as masscan port
+  --rate RATE          same as masscan rate
+```
+
++ Scan with all modules (**TARGET** is your ip file, **OUT_DIR** is the path where results will be saved):
+```shell
+./run_ingram.py --in TARGET --out OUT_DIR --all --th_num 80
+# If you use wechat, then the --send_msg should be provided:
+./run_ingram.py --in TARGET --out OUT_DIR --all --th_num 80 --send_msg
+```
+
++ There are some *IP FILE* in `statics/iplist/data/` that you can use, for example:
+```shell
+./run_ingram.py --in statics/iplist/data/country/JP.txt --out OUT_DIR --all --th_num 80
+```
+
++ All modules can be combined arbitrarily to scan, for example, if you want to scan Hikvision, then:
+```shell
+./run_ingram.py --in TARGET --out OUT_DIR --hik_weak --cve_2017_7921 --2021_36260 --th_num 80
+```
+
++ Direct scanning can be slow. You can use the Masscan to speed up. The Masscan needs to be installed in advance. For example, we find hosts with ports 80 and 8000 to 8008 open and scan them:
+```shell
+./run_ingram.py --in TARGET --out OUT_DIR --masscan --port 80,8000-8008 --rate 5000
+./run_ingram.py --in OUT_DIR/masscan_res --out OUT_DIR --all --th_num 80
+```
+
++ Snapshot of running process: 
 ![](statics/imgs/run_time.png)
 
-结果展示 (需要注意，某些漏洞无法提供用户名与密码，例如 cve-2021-36260)：
+
+## Results
+
++ The results are saved in the `OUT_DIR/results.csv` file, and the format is "ip,port,user,passwd,device,vulnerability":
 ![](statics/imgs/results.png)
 
++ Some camera's snapshots are saved in `OUT_DIR/snapshots/`:
+![](statics/imgs/snapshots.png)
 
-### (可选)借助 masscan 进行提速
 
-如果对所有ip进行扫描是非常耗时的，我们可以使用端口扫描工具先找到端口开放的主机，然后对这部分主机进行漏洞扫描，masscan工具需要自行安装
+## The Live
+
++ You can log in directly from the browser to see the live screen.
+  
++ If you want to view the live in batch, we provided a script: `show/show_rtsp/show_all.py`, though it has some flaws:
 ```shell
-./run_Ingram.py --in_file statics/iplist/data/country/JP.txt --out_file port80 --masscan --port 80 --rate 5000
-./run_Ingram.py --in_file port80 --out_file results --all --th_num 80
+python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results.csv
 ```
 
-
-### (可选)微信提醒
-
-需要去 [wxpusher](https://wxpusher.zjiecode.com/docs/) 注册并创建应用，获得自己微信的UID，以及应用的APP_TOKEN，然后将这两个东西写入到 `utils/wechat.py` 里面uids以及token中，下面的xxxx部分:
-```python
-def send_msg(content: str = "default content") -> Dict:
-    return WxPusher.send_message(uids=['xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'],
-                                 token='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                                 content=f'{content}')
-```
-
-之后，运行工具时，加上参数 `--send_msg` 即可在微信上查收提醒:
-```shell
-./run_Ingram.py --in_file statics/iplist/data/country/JP.txt --out_file results --all --th_num 80 --send_msg
-```
-
-
-## 查看摄像头画面
-
-可以直接从浏览器登录进行查看，或者使用我们提供的工具 `show/show_rtsp` 来批量查看。若批量查看，需要将创建一个文件，并将摄像头信息写进去，格式要求如下：
-+ 每行一个camera，需要按照 `ip,用户名,密码` 的格式来写
-+ 如果camera存在 `cve-2017-7921` 漏洞的话，也可以使用 `ip,cve-2017-7921` 格式，但是不建议这样做，因为这种方式展示的是一组图片，而不是视频，所以会明显卡顿
-
-下面是一个 cam 文件的样例：
-```shell
-192.168.0.1,user,passwd
-192.168.0.2,cve-2017-7921
-```
-
-运行：
-```shell
-python3 -Bu show/show_rtsp/show_all.py cams_file
-```
-
-运行截图：
 ![](statics/imgs/show_rtsp.png)
 
 
-## 免责声明
+## Disclaimer
 
-本工具仅供学习与安全检测，请勿用于非法用途，一切因本工具导致的法律后果均由使用者自己承担!!!
+This tool is only for learning and safety testing, do not fucking use it for illegal purpose, all legal consequences caused by this tool will be borne by the user!!!
 
 
 ## Acknowledgements & References
