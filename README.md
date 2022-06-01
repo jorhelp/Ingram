@@ -36,7 +36,7 @@ This tool can use multiple threads to batch detect whether there are vulnerabili
 git clone https://github.com/jorhelp/Ingram.git
 ```
 
-+ **Make sure the Python version you used is >= 3.7**, and install packages by:
++ **Make sure the Python version you use is >= 3.7**, and install packages by:
 ```shell
 cd Ingram
 pip install -r requirements.txt
