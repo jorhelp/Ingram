@@ -40,7 +40,10 @@ class MasScaner(Base):
                         of.write(f"{ip}:{port}\n")
 
     def __call__(self, args) -> None:
-        os.system(f"sudo masscan --exclude 255.255.255.255 -iL {self.in_file} -p{args.port} --rate {args.rate} -oL {self.tmp}")
+        if os.path.exists('paused.conf'):
+            os.system(f"sudo masscan --resume paused.conf")
+        else:
+            os.system(f"sudo masscan --exclude 255.255.255.255 -iL {self.in_file} -p{args.port} --rate {args.rate} -oL {self.tmp}")
         self.parse(self.tmp)
 
 
