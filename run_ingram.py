@@ -54,11 +54,11 @@ def run(args):
 
     # scan
     if args.masscan:
-        scn = scanner.MasScaner(args.in_file, args.out_path)
-        scn(args)
+        scn = scanner.MasScaner(args)
+        scn()
     else:
-        scn = scanner.CameraScanner(args.in_file, args.out_path)
-        scn(args)
+        scn = scanner.CameraScanner(args)
+        scn()
 
     # finished
     if args.send_msg:

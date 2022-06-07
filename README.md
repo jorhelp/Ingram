@@ -29,6 +29,12 @@ This tool can use multiple threads to batch detect whether there are vulnerabili
 **Only successfully tested on Mac and Linux, but not on Windows!**
 
 
+## New Features
+
++ 2022-06-11 **Resume supported!!!**
+    - If your program breaks due to network or other reasons, you can continue the previous process by simply running the command that ran last time. For example, the last command you executed was `./run_ingram.py --in ip.txt --out output --all --th_num 80`, to resume, simply continue `./run_ingram.py --in ip.txt --out output --all --th_num 80`
+
+
 ## Installation
 
 + Clone this repository by:
@@ -148,7 +154,7 @@ python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results.csv
 
 ## Disclaimer
 
-This tool is only for learning and safety testing, do not fucking useing it for illegal purpose, all legal consequences caused by this tool will be borne by the user!!!
+This tool is only for learning and safety testing, do not fucking use it for illegal purpose, all legal consequences caused by this tool will be borne by the user!!!
 
 
 ## Acknowledgements & References
