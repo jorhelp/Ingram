@@ -31,6 +31,8 @@ This tool can use multiple threads to batch detect whether there are vulnerabili
 
 ## New Features
 
++ 2022-06-11 **Optimized running speed; Supportted storage of the not vulerable targets**
+
 + 2022-06-11 **Resume supported!!!**
     - If your program breaks due to network or other reasons, you can continue the previous process by simply running the command that ran last time. For example, the last command you executed was `./run_ingram.py --in ip.txt --out output --all --th_num 80`, to resume, simply continue `./run_ingram.py --in ip.txt --out output --all --th_num 80`
 

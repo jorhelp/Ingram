@@ -2,12 +2,12 @@
 import os
 import sys
 import time
-from functools import partial
+
 from multiprocessing import Lock
 
 CWD = os.path.dirname(__file__)
 sys.path.append(os.path.join(CWD, '..'))
-from scan.modules import *
+from scan.modules import modules
 from utils.net import get_all_ip, get_ip_seg_len
 from utils.base import multi_thread, process_bar, save_res
 from utils.config import *
@@ -51,8 +51,10 @@ class CameraScanner(Base):
     def __init__(self, args) -> None:
         super().__init__(args)
         self.scanner_name = 'camera scanner'
-        self.thread_lock = Lock()
+        self.done_lock = Lock()
+        self.found_lock = Lock()
         self.file_lock = Lock()
+        self.bar_lock = Lock()
         self.start_time = time.time()
         self.bar = process_bar()
 
@@ -92,61 +94,93 @@ class CameraScanner(Base):
     def __del__(self):
         self.paused.close()
 
-    def _step(self, *args, **kwargs):
-        with self.thread_lock:
-            if kwargs['found']:
-                self.found += 1
-            self.bar(self.total, self.done + 1, self.found, timer=True, start_time=self.start_time)
+
+    def scan_meta(self, ip, mod_name):
+        found = False
+        try:
+            res = self.modules[mod_name](ip)
+            if res[0] == True:  # found vulnerability
+                found = True
+                with self.found_lock: self.found += 1
+                if ':' not in ip: port = '80'
+                else: ip, port = ip.split(':')
+                camera_info = [ip, port] + res[1:]
+                save_res(camera_info, os.path.join(self.args.out_path, RESULTS_ALL))  # save results (all)
+                if res[1]:
+                    save_res([ip, port] + res[1: 3], os.path.join(self.args.out_path, RESULTS_SIMPLE))  # save [ip, port, user, pass]
+                
+                # save snapshot if possible
+                os.system(f"python3 -Bu utils/camera.py --ip '{camera_info[0]}'"
+                            f" --port '{camera_info[1]}' --user '{camera_info[2]}' --passwd '{camera_info[3]}'"
+                            f" --device '{camera_info[4]}' --vulnerability '{camera_info[5]}'"
+                            f" --sv_path {self.args.out_path} > /dev/null 2> /dev/null")
+        except Exception as e:
+            if DEBUG: print(e)
+        finally:
+            with self.bar_lock: self.bar(self.total, self.done + 1, self.found, timer=True, start_time=self.start_time)
+            return found
+
+
+    def mod_by_device(self, dev_type):
+        """check if we should scan this device-type or not"""
+        if dev_type == 'hikvision':
+            for mod_name in ['hik_weak', 'hb_weak', 'cve_2017_7921', 'cve_2021_36260']:
+                if mod_name in self.modules: return True
+            return False
+        if dev_type == 'dahua':
+            for mod_name in ['dahua_weak', 'cve_2021_33044']:
+                if mod_name in self.modules: return True
+            return False
+        if dev_type == 'cctv':
+            return 'cctv_weak' in self.modules
+        if dev_type == 'dlink':
+            return 'cve_2020_25078' in self.modules
+
 
     def scan(self, ip_term: str):
         if ':' in ip_term: _targets = [ip_term]
         else: _targets = get_all_ip(ip_term)
         for ip in _targets:
-            for mod in self.modules:
-                found = False
-                try:
-                    res = mod(ip)
-                    if res[0] == True:  # found vulnerability
-                        found = True
-                        if ':' not in ip: port = '80'
-                        else: ip, port = ip.split(':')
-                        camera_info = [ip, port] + res[1:]
-                        save_res(camera_info, os.path.join(self.args.out_path, RESULTS_ALL))  # save result
-                        os.system(f"python3 -Bu utils/camera.py --ip '{camera_info[0]}'"
-                                  f" --port '{camera_info[1]}' --user '{camera_info[2]}' --passwd '{camera_info[3]}'"
-                                  f" --device '{camera_info[4]}' --vulnerability '{camera_info[5]}'"
-                                  f" --sv_path {self.args.out_path} > /dev/null 2> /dev/null")  # save snapshot if possible
-                except Exception as e: 
-                    if DEBUG: print(e)
-                finally: self._step(found=found)
-            with self.thread_lock: self.done += 1
+            found = False
+            dev_type = modules['device_type'](ip)  # hikvision, dahua, cctv, dlink, unidentified
+
+            if dev_type == 'unidentified':
+                with self.done_lock: self.done += 1
+                continue
+            elif dev_type == 'hikvision' and self.mod_by_device('hikvision'):
+                if 'hik_weak' in self.modules: found |= self.scan_meta(ip, 'hik_weak')
+                if 'hb_weak' in self.modules: found |= self.scan_meta(ip, 'hb_weak')
+                if 'cve_2017_7921' in self.modules: found |= self.scan_meta(ip, 'cve_2017_7921')
+                if 'cve_2021_36260' in self.modules: found |= self.scan_meta(ip, 'cve_2021_36260')
+            elif dev_type == 'dahua' and self.mod_by_device('dahua'):
+                if 'dahua_weak' in self.modules: found |= self.scan_meta(ip, 'dahua_weak')
+                if 'cve_2021_33044' in self.modules: found |= self.scan_meta(ip, 'cve_2021_33044')
+            elif dev_type == 'cctv' and self.mod_by_device('cctv'):
+                if 'cctv_weak' in self.modules: found |= self.scan_meta(ip, 'cctv_weak')
+            elif dev_type == 'dlink' and self.mod_by_device('dlink'):
+                if 'cve_2020_25078' in self.modules: found |= self.scan_meta(ip, 'cve_2020_25078')
+            if not found: save_res([ip, dev_type], os.path.join(self.args.out_path, RESULTS_FAILED))
+
+            with self.done_lock: self.done += 1
         # write paused
         with self.file_lock:
             self.paused.write(ip_term + '\n')
             self.paused.flush()
 
+
     def _close(self):
         os.remove(os.path.join(self.args.out_path, PAUSE))
 
+
     def __call__(self):
-        self.modules = []
-        hik_weak_partial = partial(hik_weak, users=USERS, passwords=PASSWORDS)
-        dahua_weak_partial = partial(dahua_weak, users=USERS, passwords=PASSWORDS)
-        cctv_weak_partial = partial(cctv_weak, users=USERS, passwords=PASSWORDS)
-        hb_weak_partial = partial(hb_weak, users=USERS, passwords=PASSWORDS)
+        self.modules = {}
 
         if self.args.all:
-            self.modules.extend([cve_2017_7921, cve_2021_36260, cve_2020_25078, cve_2021_33044])
-            self.modules.extend([hik_weak_partial, dahua_weak_partial, cctv_weak_partial, hb_weak_partial])
+            self.modules = modules
         else:
-            if self.args.hik_weak: self.modules.append(hik_weak_partial)
-            if self.args.dahua_weak: self.modules.append(dahua_weak_partial)
-            if self.args.cctv_weak: self.modules.append(cctv_weak_partial)
-            if self.self.args.hb_weak: self.modules.append(hb_weak_partial)
-            if self.args.cve_2017_7921: self.modules.append(cve_2017_7921)
-            if self.args.cve_2021_36260: self.modules.append(cve_2021_36260)
-            if self.args.cve_2020_25078: self.modules.append(cve_2020_25078)
-            if self.args.cve_2021_33044: self.modules.append(cve_2021_33044)
+            for mod_name, mod_func in modules.items():
+                if mod_name in self.args and eval(f"self.args.{mod_name}"):
+                    self.modules[mod_name] = mod_func
         
         multi_thread(self.scan, self.ip_list, processes=self.args.th_num)
         self._close()
