@@ -9,7 +9,7 @@ def save_res(res: list, out_path: str) -> None:
     """save a result record to file
     format should be: [ip, port, user, passwd, device, vulnerability]
     """
-    with open(os.path.join(out_path, 'results.csv'), 'a') as f:
+    with open(out_path, 'a') as f:
         f.write(f"{','.join(res)}\n")
 
 
