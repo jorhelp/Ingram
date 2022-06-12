@@ -4,12 +4,13 @@ import sys
 import time
 
 from multiprocessing import Lock
+from collections import defaultdict
 
 CWD = os.path.dirname(__file__)
 sys.path.append(os.path.join(CWD, '..'))
 from scan.modules import modules
 from utils.net import get_all_ip, get_ip_seg_len
-from utils.base import multi_thread, process_bar, save_res
+from utils.base import multi_thread, process_bar, save_res, printf
 from utils.config import *
 
 
@@ -54,7 +55,6 @@ class CameraScanner(Base):
         self.done_lock = Lock()
         self.found_lock = Lock()
         self.file_lock = Lock()
-        self.bar_lock = Lock()
         self.start_time = time.time()
         self.bar = process_bar()
 
@@ -68,6 +68,7 @@ class CameraScanner(Base):
         # total ip
         with open(self.args.in_file, 'r') as f:
             total_ip = [l.strip() for l in f if not l.startswith('#') and l.strip()]
+            total_ip = list(set(total_ip))
         for ip in total_ip:
             self.total += get_ip_seg_len(ip) if '-' in ip or '/' in ip else 1
 
@@ -92,7 +93,38 @@ class CameraScanner(Base):
                         self.found += 1
 
     def __del__(self):
-        self.paused.close()
+        if os.path.exists(os.path.join(self.args.out_path, PAUSE)): self.paused.close()
+
+
+    def report(self):
+        """report the results"""
+        if not os.path.exists(os.path.join(self.args.out_path, RESULTS_ALL)):
+            return
+
+        with open(os.path.join(self.args.out_path, RESULTS_ALL), 'r') as f:
+            items = [l.strip().split(',') for l in f if l.strip()]
+
+        results = defaultdict(lambda: defaultdict(lambda: 0))
+        for i in items:
+            dev, vul = i[-2], i[-1]
+            results[dev][vul] += 1
+        results_sum = len(items)
+        results_max = max([val for vul in results.values() for val in vul.values()])
+        
+        print('\n')
+        print('-' * 19, 'REPORT', '-' * 19)
+        for dev in results:
+            vuls = [(vul_name, vul_count) for vul_name, vul_count in results[dev].items()]
+            dev_sum = sum([i[1] for i in vuls])
+            printf(f"{dev} {dev_sum}", color='red', bold=True)
+            for vul_name, vul_count in vuls:
+                printf(f"{vul_name:>18} | ", end='')
+                block_num = int(vul_count / results_max * 25)
+                printf('▥' * block_num, end=' ')
+                printf(vul_count)
+        printf(f"{'sum: ' + str(results_sum):>46}", color='yellow', flash=True)
+        print('-' * 46)
+        print('\n')
 
 
     def scan_meta(self, ip, mod_name):
@@ -117,7 +149,6 @@ class CameraScanner(Base):
         except Exception as e:
             if DEBUG: print(e)
         finally:
-            with self.bar_lock: self.bar(self.total, self.done + 1, self.found, timer=True, start_time=self.start_time)
             return found
 
 
@@ -144,10 +175,7 @@ class CameraScanner(Base):
             found = False
             dev_type = modules['device_type'](ip)  # hikvision, dahua, cctv, dlink, unidentified
 
-            if dev_type == 'unidentified':
-                with self.done_lock: self.done += 1
-                continue
-            elif dev_type == 'hikvision' and self.mod_by_device('hikvision'):
+            if dev_type == 'hikvision' and self.mod_by_device('hikvision'):
                 if 'hik_weak' in self.modules: found |= self.scan_meta(ip, 'hik_weak')
                 if 'hb_weak' in self.modules: found |= self.scan_meta(ip, 'hb_weak')
                 if 'cve_2017_7921' in self.modules: found |= self.scan_meta(ip, 'cve_2017_7921')
@@ -159,9 +187,15 @@ class CameraScanner(Base):
                 if 'cctv_weak' in self.modules: found |= self.scan_meta(ip, 'cctv_weak')
             elif dev_type == 'dlink' and self.mod_by_device('dlink'):
                 if 'cve_2020_25078' in self.modules: found |= self.scan_meta(ip, 'cve_2020_25078')
-            if not found: save_res([ip, dev_type], os.path.join(self.args.out_path, RESULTS_FAILED))
 
-            with self.done_lock: self.done += 1
+            if not found and dev_type != 'unidentified':
+                save_res([ip, dev_type], os.path.join(self.args.out_path, RESULTS_FAILED))
+
+            with self.done_lock:
+                self.done += 1
+                # self.bar(self.total, self.done + 1, self.found, timer=True, start_time=self.start_time)
+                self.bar(self.total, self.done, self.found, timer=True, start_time=self.start_time)
+
         # write paused
         with self.file_lock:
             self.paused.write(ip_term + '\n')
@@ -183,4 +217,5 @@ class CameraScanner(Base):
                     self.modules[mod_name] = mod_func
         
         multi_thread(self.scan, self.ip_list, processes=self.args.th_num)
+        self.report()
         self._close()
