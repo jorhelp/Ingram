@@ -22,7 +22,7 @@ def run_time(func):
     return wrapper
 
 
-@run_time
+# @run_time
 def multi_process(func, items, processes=40):
     """multiprocess API"""
     with Pool(processes) as pool:
@@ -30,7 +30,7 @@ def multi_process(func, items, processes=40):
     return res
 
 
-@run_time
+# @run_time
 def multi_thread(func, items, processes=40):
     """multiprocess API"""
     with ThreadPool(processes) as pool:
@@ -64,8 +64,8 @@ def output_formatter(info, color='green', bold=False, underline=False, flash=Fal
     return head + bold + underline + flash + color + str(info) + tail
 
 
-def printf(info, color='green', bold=False, underline=False, flash=False):
-    print(output_formatter(info, color=color, bold=bold, underline=underline, flash=flash))
+def printf(info, color='green', bold=False, underline=False, flash=False, *args, **kwargs):
+    print(output_formatter(info, color=color, bold=bold, underline=underline, flash=flash), *args, **kwargs)
 
 
 def time_formatter(t: float) -> str:
@@ -91,16 +91,16 @@ def process_bar(cidx=[0]):
             time_pred = time_used * (total / done)
             time_used = output_formatter(time_formatter(time_used), color='cyan', bold=True)
             time_pred = output_formatter(time_formatter(time_pred), color='white', bold=True)
-            _time = f"time: {time_used}/{time_pred}"
+            _time = f"Time: {time_used}/{time_pred}"
 
         # count
         _total = output_formatter(total, color='blue', bold=True)
         _done = output_formatter(done, color='blue', bold=True)
         _percent = output_formatter(f"{round(done / total * 100, 1)}%", color='pink', bold=True)
         _found = 'Found ' + output_formatter(found, color='red', bold=True) if found else ''
-        count = f"{_done}/{_total} ({_percent}) {_found}"
+        count = f"{_done}/{_total}({_percent}) {_found}"
 
-        print(f"\r{icon} {count}  {_time:<55}", end='')
+        print(f"\r{icon} {count}  {_time:<55}", end='', flush=True)
     return wrapper
 
 
