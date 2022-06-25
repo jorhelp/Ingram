@@ -1,6 +1,7 @@
 """Network Tools"""
-import IPy
 import random
+
+import IPy
 
 
 def get_ip_segment(start: str, end: str) -> str:

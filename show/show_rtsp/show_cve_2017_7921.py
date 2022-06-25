@@ -1,7 +1,8 @@
 """show camera that can be exploited by CVE-2017-7921"""
-import cv2
 import requests
 import argparse
+
+import cv2
 import numpy as np
 
 
