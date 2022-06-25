@@ -120,7 +120,7 @@ optional arguments:
 
 + All modules can be combined arbitrarily to scan, for example, if you want to scan Hikvision, then:
 ```shell
-./run_ingram.py --in TARGET --out OUT_DIR --hik_weak --cve_2017_7921 --cve-2021_36260 --th_num 80
+./run_ingram.py --in TARGET --out OUT_DIR --hik_weak --cve_2017_7921 --cve_2021_36260 --th_num 80
 ```
 
 + Direct scanning can be slow. You can use the Masscan to speed up. The Masscan needs to be installed in advance. For example, we find hosts whose port 80 and 8000 to 8008 opened and scan them:

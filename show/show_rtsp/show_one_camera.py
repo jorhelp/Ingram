@@ -1,7 +1,8 @@
 """display the camera in rtsp"""
+import argparse
+
 import cv2
 import rtsp
-import argparse
 
 
 def get_parser():

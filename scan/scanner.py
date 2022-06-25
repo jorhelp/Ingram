@@ -2,7 +2,6 @@
 import os
 import sys
 import time
-
 from multiprocessing import Lock
 from collections import defaultdict
 

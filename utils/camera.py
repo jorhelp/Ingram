@@ -1,19 +1,24 @@
 """Some tools about camera"""
 import os
-import rtsp
 import requests
 import argparse
+from functools import partial
+
+import rtsp
 from PIL import Image
+
+from base import multi_thread
 
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ip', type=str, required=True)
-    parser.add_argument('--port', type=str, required=True)
-    parser.add_argument('--user', type=str, required=True)
-    parser.add_argument('--passwd', type=str, required=True)
-    parser.add_argument('--device', type=str, required=True)
-    parser.add_argument('--vulnerability', type=str, required=True)
+    parser.add_argument('--ip', type=str, required=False)
+    parser.add_argument('--port', type=str, required=False)
+    parser.add_argument('--user', type=str, required=False)
+    parser.add_argument('--passwd', type=str, required=False)
+    parser.add_argument('--device', type=str, required=False)
+    parser.add_argument('--vulnerability', type=str, required=False)
+    parser.add_argument('--in_file', type=str, required=False, default='')
     parser.add_argument('--sv_path', type=str, required=True)
 
     args = parser.parse_args()
@@ -21,12 +26,22 @@ def get_parser():
 
 
 def save_snapshot(args) -> None:
-    """select diff func to save snapshot"""
     snapshot_path = os.path.join(args.sv_path, 'snapshots')
     if not os.path.exists(snapshot_path):
-        os.mkdir(snapshot_path)
+        os.makedirs(snapshot_path)
 
-    camera_info = [args.ip, args.port, args.user, args.passwd, args.device, args.vulnerability]
+    if args.in_file:
+        with open(args.in_file, 'r') as f:
+            items = [l.strip().split(',') for l in f if l.strip()]
+        _func = partial(snapshot_switch, snapshot_path=snapshot_path)
+        multi_thread(_func, items, processes=16)
+    else:
+        camera_info = [args.ip, args.port, args.user, args.passwd, args.device, args.vulnerability]
+        snapshot_switch(camera_info, snapshot_path)
+
+
+def snapshot_switch(camera_info, snapshot_path):
+    """select diff func to save snapshot"""
     try:
         # cve-2017-7921
         if camera_info[-1] == 'cve-2017-7921':

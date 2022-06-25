@@ -1,6 +1,7 @@
 """Wecheet Pusher"""
 import os
 import sys
+
 from wxpusher import WxPusher
 
 CWD = os.path.dirname(__file__)
@@ -9,9 +10,7 @@ from utils.config import UIDS, TOKEN
 
 
 def send_msg(content: str = "default content") -> dict:
-    return WxPusher.send_message(uids=UIDS,
-                                 token=TOKEN,
-                                 content=f'{content}')
+    return WxPusher.send_message(uids=UIDS, token=TOKEN, content=f'{content}')
 
 
 if __name__ == '__main__':
