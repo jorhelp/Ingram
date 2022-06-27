@@ -14,7 +14,7 @@
 
 
 <div align=center>
-    <img alt="Ingram" src="https://github.com/jorhelp/Ingram/blob/dev/statics/imgs/logo.png">
+    <img alt="Ingram" src="https://github.com/jorhelp/Ingram/blob/master/statics/imgs/logo.png">
 </div>
 
 
@@ -27,7 +27,7 @@
 </div>
 
 
-English | [简体中文](https://github.com/jorhelp/Ingram/blob/dev/README_CN.md)
+English | [简体中文](https://github.com/jorhelp/Ingram/blob/master/README_CN.md)
 
 
 ## Introduction
