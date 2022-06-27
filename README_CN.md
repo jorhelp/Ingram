@@ -27,67 +27,67 @@
 </div>
 
 
-English | [简体中文](https://github.com/jorhelp/Ingram/blob/dev/README_CN.md)
+简体中文 | [English](https://github.com/jorhelp/Ingram/blob/dev/README.md)
 
 
-## Introduction
+## 简介
 
 ![](statics/imgs/run_time.gif)
 
-Schools, hospitals, shopping malls, restaurants, and other places where equipment is not well maintained, there will always be vulnerabilities, either because they are not patched in time or because weak passwords are used to save trouble.
+一个多线程批量检测网络摄像头是否暴露的工具。
 
-This tool can use multiple threads to batch detect whether there are vulnerabilities in the cameras on the local or public network, so as to repair them in time and improve device security.
-
-**Only successfully tested on Mac and Linux, but not on Windows!**
+**只在 Mac 与 Linux 上测试过，没有在 Windows 平台进行测试**
 
 
-## Installation
+## 安装
 
-+ Clone this repository by:
++ 克隆该仓库:
 ```bash
 git clone https://github.com/jorhelp/Ingram.git
 ```
 
-+ **Make sure the Python version you use is >= 3.7**, and install packages by:
++ 确保你安装了 3.7 及以上的 Python，然后进入项目目录安装依赖:
 ```bash
 cd Ingram
 pip install -r requirements.txt
 ```
 
+至此安装完毕！
 
-## Preparation
 
-+ You should prepare a target file, which contains the ip addresses will be scanned. The following formats are allowed:
+## 运行之前的准备工作
+
++ 你需要准备一个目标文件，里面保存着你要扫描的 IP 地址，每行一个目标，具体格式如下：
 ```
-# Use '#' to comment (must have a single line!!)
-# Single ip
+# 你可以使用井号(#)来进行注释
+# 单个的 IP 地址
 192.168.0.1
-# Single ip with port
+# IP 地址以及要扫描的端口
 192.168.0.2:80
-# IP segment with '/'
+# 带 '/' 的IP段
 192.168.0.0/16
-# IP segment with '-'
+# 带 '-' 的IP段
 192.168.0.0-192.168.255.255
 ```
 
-+ The `utils/config.py` file already specifies some usernames and passwords to support weak password scanning. You can expand or decrease it:
++ `utils/config.py` 文件里已经指定了一些用户名与密码来支持弱口令扫描，你可以随意修改它们（如果你想测试其他密码的话）:
 ```python
 # camera
 USERS = ['admin']
 PASSWORDS = ['admin', 'admin12345', 'asdf1234', '12345admin', '12345abc']
 ```
 
-+ (**Optional**) If you use wechat app, and want to get a reminder on your phone. You need to follow [wxpusher](https://wxpusher.zjiecode.com/docs/) instructions to get your *UID* and *APP_TOKEN*, and write them to `utils/config.py`:
++ (**可选**) 扫描时间可能会很长，如果你想让程序扫描结束的时候通过微信发送一条提醒的话，你需要按照 [wxpusher](https://wxpusher.zjiecode.com/docs/) 的指示来获取你的专属 *UID* 和 *APP_TOKEN*，并将其写入 `utils/config.py`:
 ```python
 # wechat
 UIDS = ['This is your UID', 'This is another UID if you have', ...]
 TOKEN = 'This is your APP_TOKEN'
 ```
 
-+ (**Optional**) Email is not supported yet...
++ (**可选**) 邮件提醒暂时不支持...
 
 
-## Run
+## 运行
 
 ```shell
 optional arguments:
@@ -111,40 +111,40 @@ optional arguments:
   --rate RATE          same as masscan rate
 ```
 
-+ Scan with all modules (**TARGET** is your ip file, **OUT_DIR** is the path where results will be saved):
++ 使用所有模块来扫描 (**TARGET** 是你的目标文件, **OUT_DIR** 是结果保存路径):
 ```bash
-# th_num number of threads needs to be adjusted by yourself to state of your network
+# th_num 线程数量根据你的网络情况自行调整
 ./run_ingram.py --in TARGET --out OUT_DIR --all --th_num 80
 
-# If you use wechat, then the --send_msg should be provided:
+# 如果你已经配置好了微信，那么 --send_msg 参数应该加上
 ./run_ingram.py --in TARGET --out OUT_DIR --all --th_num 80 --send_msg
 ```
 
-+ Snapshots (Snapshoting is supported by default, but you can disable it with --nosnap if you think it's too slow)
++ 摄像头快照 (默认是支持快照抓取的，如果你嫌它太慢可以使用 --nosnap 参数来关闭)
 ```bash
 ./run_ingram.py --in TARGET --out OUT_DIR --all --th_num 80 --nosnap
 ```
 
-+ There are some *IP FILE* in `statics/iplist/data/` that you can use, for example:
-```bash
++ 在 `statics/iplist/data/` 路径下有一些 IP 文件，你可以直接拿来使用，例如扫描日本（JP）的设备：
+```shell
 ./run_ingram.py --in statics/iplist/data/country/JP.txt --out OUT_DIR --all --th_num 80
 ```
 
-+ All modules can be combined arbitrarily to scan, for example, if you want to scan Hikvision, then:
-```bash
++ 所有的模块可以任意组合，例如，如果你想扫描海康设备，那么:
+```shell
 ./run_ingram.py --in TARGET --out OUT_DIR --hik_weak --cve_2017_7921 --cve_2021_36260 --th_num 80
 ```
 
-+ Direct scanning can be slow. You can use the Masscan to speed up. The Masscan needs to be installed in advance. For example, we find hosts whose port 80 and 8000 to 8008 opened and scan them:
++ 可以使用 Masscan 来加速扫描过程，原理就是先用 Masscan 找到指定端口开放的设备，然后再扫描这些设备 (Masscan需要自己安装):
 ```shell
 ./run_ingram.py --in TARGET --out OUT_DIR --masscan --port 80,8000-8008 --rate 5000
 ./run_ingram.py --in OUT_DIR/masscan_res --out OUT_DIR --all --th_num 80
 ```
 
-+ If your program breaks due to network or other reasons, you can continue the previous process by simply running the command that ran last time. For example, the last command you executed was `./run_ingram.py --in ip.txt --out output --all --th_num 80`, to resume, simply continue `./run_ingram.py --in ip.txt --out output --all --th_num 80`, also for the masscan.
++ 中断恢复。如果因为网络原因或其他原因导致运行中断了，只需运行和之前相同的命令即可继续运行，例如，如果你之前执行的是 `./run_ingram.py --in ip.txt --out output --all --th_num 80`，只需继续执行该命令即可恢复。对于 Masscan 也是一样。
 
 
-## Results
+## 结果
 
 ```bash
 .
@@ -154,22 +154,22 @@ optional arguments:
 └── snapshots
 ```
 
-+ The comprehensive results are saved in the `OUT_DIR/results_all.csv` file, and each line is `ip,port,user,passwd,device,vulnerability`:   
++ `OUT_DIR/results_all.csv` 文件里面保存了完整的结果, 格式为: `ip,port,user,passwd,device,vulnerability`:  
 ![](statics/imgs/results.png)
 
-+ The `OUT_DIR/results_simple.csv` file contains only the target with the password, in the format of `IP,port,user,passwd`
++ `OUT_DIR/results_simple.csv` 文件里面只保存了有密码的目标，格式为: `ip,port,user,passwd`
 
-+ `OUT_DIR/not_vulnerable.csv` file is stored in the target without vulnerability exposure
++ `OUT_DIR/not_vulnerable.csv` 中保存的是没有暴露的设备
 
-+ Some camera's snapshots can be found in `OUT_DIR/snapshots/`:  
++ `OUT_DIR/snapshots/` 中保存了部分设备的截图:  
 ![](statics/imgs/snapshots.png)
 
 
-## The Live
+## 实时预览
 
-+ You can log in directly from the browser to see the live screen.
++ 可以直接通过浏览器登录来预览
   
-+ If you want to view the live screen in batch, we provided a script: `show/show_rtsp/show_all.py`, though it has some flaws:
++ 如果想批量查看，我们提供了一个脚本 `show/show_rtsp/show_all.py`，不过它还有一些问题:
 ```shell
 python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results_all.csv
 ```
@@ -177,19 +177,19 @@ python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results_all.csv
 ![](statics/imgs/show_rtsp.png)
 
 
-## Change Logs
+## 更新日志
 
-+ [2022-06-11] **Optimized running speed; Supportted storage of the not vulnerable targets**
++ [2022-06-11] **优化运行速度，支持存储非暴露设备**
 
-+ [2022-06-11] **Resume supported!!!**
-
-
-## Disclaimer
-
-This tool is only for learning and safety testing, do not fucking use it for illegal purpose, all legal consequences caused by this tool will be borne by the user!!!
++ [2022-06-11] **支持中断恢复**
 
 
-## Acknowledgements & References
+## 免责声明
+
+本工具仅供安全测试，严禁用于非法用途，后果与本团队无关
+
+
+## 鸣谢 & 引用
 
 Thanks to [Aiminsun](https://github.com/Aiminsun/CVE-2021-36260) for CVE-2021-36260  
 Thanks to [chrisjd20](https://github.com/chrisjd20/hikvision_CVE-2017-7921_auth_bypass_config_decryptor) for hidvision config file decryptor  

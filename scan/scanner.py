@@ -141,10 +141,11 @@ class CameraScanner(Base):
                     save_res([ip, port] + res[1: 3], os.path.join(self.args.out_path, RESULTS_SIMPLE))  # save [ip, port, user, pass]
                 
                 # save snapshot if possible
-                os.system(f"python3 -Bu utils/camera.py --ip '{camera_info[0]}'"
-                            f" --port '{camera_info[1]}' --user '{camera_info[2]}' --passwd '{camera_info[3]}'"
-                            f" --device '{camera_info[4]}' --vulnerability '{camera_info[5]}'"
-                            f" --sv_path {self.args.out_path} > /dev/null 2> /dev/null")
+                if self.args.nosnap:
+                    os.system(f"python3 -Bu utils/camera.py --ip '{camera_info[0]}'"
+                                f" --port '{camera_info[1]}' --user '{camera_info[2]}' --passwd '{camera_info[3]}'"
+                                f" --device '{camera_info[4]}' --vulnerability '{camera_info[5]}'"
+                                f" --sv_path {self.args.out_path} > /dev/null 2> /dev/null")
         except Exception as e:
             if DEBUG: print(e)
         finally:
