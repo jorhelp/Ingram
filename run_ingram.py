@@ -29,6 +29,7 @@ def get_parser():
     parser.add_argument('--cve_2017_7921', action='store_true')
     parser.add_argument('--cve_2020_25078', action='store_true')
     parser.add_argument('--th_num', type=int, default=80, help='the processes num')
+    parser.add_argument('--nosnap', action='store_false', help='do not capture the snapshot')
 
     parser.add_argument('--masscan', action='store_true', help='run massscan sanner')
     parser.add_argument('--port', type=str, default=80, help='same as masscan port')
