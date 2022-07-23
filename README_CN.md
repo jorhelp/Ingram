@@ -49,6 +49,7 @@ git clone https://github.com/jorhelp/Ingram.git
 + 确保你安装了 3.7 及以上的 Python，然后进入项目目录安装依赖:
 ```bash
 cd Ingram
+pip install git+https://github.com/arthaud/python3-pwntools.git
 pip install -r requirements.txt
 ```
 
@@ -183,6 +184,9 @@ python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results_all.csv
 
 + [2022-06-11] **支持中断恢复**
 
++ [2022-07-23] **可以通过 CVE-2021-33044(Dahua) 来获取用户名与密码了！修改了摄像头快照逻辑(将rtsp替换为了http)，优化了运行速度**
+    - **由于新版本加入了一些依赖包，需要重新配置环境!!!**
+
 
 ## 免责声明
 
@@ -194,3 +198,4 @@ python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results_all.csv
 Thanks to [Aiminsun](https://github.com/Aiminsun/CVE-2021-36260) for CVE-2021-36260  
 Thanks to [chrisjd20](https://github.com/chrisjd20/hikvision_CVE-2017-7921_auth_bypass_config_decryptor) for hidvision config file decryptor  
 Thanks to [metowolf](https://github.com/metowolf/iplist) for ip list  
+Thanks to [mcw0](https://github.com/mcw0/DahuaConsole) for DahuaConsole

