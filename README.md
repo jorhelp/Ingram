@@ -51,6 +51,7 @@ git clone https://github.com/jorhelp/Ingram.git
 + **Make sure the Python version you use is >= 3.7**, and install packages by:
 ```bash
 cd Ingram
+pip install git+https://github.com/arthaud/python3-pwntools.git
 pip install -r requirements.txt
 ```
 
@@ -183,6 +184,9 @@ python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results_all.csv
 
 + [2022-06-11] **Resume supported!!!**
 
++ [2022-07-23] **You can obtain the user and password through CVE-2021-33044(Dahua)!!! Updated snapshot logic (change rtsp to http), optimized running speed.**
+    - **Since the new version adds some dependency packages, the environment needs to be reconfigured!**
+
 
 ## Disclaimer
 
@@ -194,3 +198,4 @@ This tool is only for learning and safety testing, do not fucking use it for ill
 Thanks to [Aiminsun](https://github.com/Aiminsun/CVE-2021-36260) for CVE-2021-36260  
 Thanks to [chrisjd20](https://github.com/chrisjd20/hikvision_CVE-2017-7921_auth_bypass_config_decryptor) for hidvision config file decryptor  
 Thanks to [metowolf](https://github.com/metowolf/iplist) for ip list  
+Thanks to [mcw0](https://github.com/mcw0/DahuaConsole) for DahuaConsole

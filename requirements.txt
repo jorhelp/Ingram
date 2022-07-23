@@ -4,5 +4,10 @@ flask
 pillow
 requests
 wxpusher
-pycryptodome
 opencv_python
+ndjson
+pycryptodome
+tzlocal
+pyOpenSSL
+requests
+pwn

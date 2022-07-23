@@ -23,7 +23,6 @@ def get_parser():
     parser.add_argument('--hik_weak', action='store_true')
     parser.add_argument('--dahua_weak', action='store_true')
     parser.add_argument('--cctv_weak', action='store_true')
-    parser.add_argument('--hb_weak', action='store_true')
     parser.add_argument('--cve_2021_36260', action='store_true')
     parser.add_argument('--cve_2021_33044', action='store_true')
     parser.add_argument('--cve_2017_7921', action='store_true')
@@ -54,16 +53,12 @@ def run(args):
             elif flag: printf(line.rstrip(), color=colors[count % len(colors)], bold=True)
 
     # scan
-    if args.masscan:
-        scn = scanner.MasScaner(args)
-        scn()
-    else:
-        scn = scanner.CameraScanner(args)
-        scn()
+    if args.masscan: scn = scanner.MasScaner(args)
+    else: scn = scanner.CameraScanner(args)
+    scn()
 
     # finished
-    if args.send_msg:
-        send_msg(f"{scn.scanner_name} finished!")
+    if args.send_msg: send_msg(f"{scn.scanner_name} finished!")
 
 
 if __name__ == '__main__':
