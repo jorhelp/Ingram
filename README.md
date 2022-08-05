@@ -103,11 +103,12 @@ optional arguments:
   --hb_weak
   --cve_2021_36260
   --cve_2021_33044
+  --cve_2021_33045
   --cve_2017_7921
   --cve_2020_25078
   --th_num TH_NUM      the processes num
   --nosnap             do not capture snapshot
-  --masscan            run massscan sanner
+  --masscan            run masscan sanner
   --port PORT          same as masscan port
   --rate RATE          same as masscan rate
 ```
@@ -186,6 +187,8 @@ python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results_all.csv
 
 + [2022-07-23] **You can obtain the user and password through CVE-2021-33044(Dahua)!!! Updated snapshot logic (change rtsp to http), optimized running speed.**
     - **Since the new version adds some dependency packages, the environment needs to be reconfigured!**
+
++ [2022-08-05] **Added CVE-2021-33045 (Dahua NVR), but the snapshot function is not always available because the NVR device's account&password may be different from the real camera**
 
 
 ## Disclaimer

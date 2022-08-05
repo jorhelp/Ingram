@@ -25,6 +25,7 @@ def get_parser():
     parser.add_argument('--cctv_weak', action='store_true')
     parser.add_argument('--cve_2021_36260', action='store_true')
     parser.add_argument('--cve_2021_33044', action='store_true')
+    parser.add_argument('--cve_2021_33045', action='store_true')
     parser.add_argument('--cve_2017_7921', action='store_true')
     parser.add_argument('--cve_2020_25078', action='store_true')
     parser.add_argument('--th_num', type=int, default=80, help='the processes num')
