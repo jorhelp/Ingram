@@ -1643,6 +1643,7 @@ sock.close()
     def _debug(self, direction, packet):
         """ Traffic debug """
         if self.debug and packet is not None:
+
             """ Print send/recv dh_data and current line number """
             print(color(
                 "[BEGIN {} ({})] <{:-^40}>".format(
@@ -1735,7 +1736,7 @@ sock.close()
         else:
             self.ID += 1
 
-    def p2p(self, packet=None, recv=False, lock=True, timeout=60, login=False, sv_path='./tmp'):
+    def p2p(self, packet=None, recv=False, lock=True, timeout=60, login=False):
         """ Handle all external communication to and from device """
         p2p_header = ''
         p2p_query_return = []
@@ -1918,18 +1919,6 @@ sock.close()
                         self._debug("RECV", p2p_header + p2p_recved)
                         try:
                             tmp = json.loads(p2p_recved)
-                            # if tmp.get('callback') and tmp.get('params'):
-                            #     items = str(tmp).split(',')
-                            #     for idx, val in enumerate(items):
-                            #         if 'Name' in val:
-                            #             user = val.split(':')[-1].strip().strip('"')
-                            #             passwd = items[idx + 1].split(':')[-1].strip().strip('"')
-                            #             print('=' * 50)
-                            #             print(f"user: {user}, passwd: {passwd}")
-                            #             print('=' * 50)
-                            #             os.system(f'echo "{user},{passwd}" > {sv_path}')
-                            #             break
-                                
                             if tmp.get('callback'):
                                 self.client_notify(json.dumps(tmp))
                                 p2p_recved = b''

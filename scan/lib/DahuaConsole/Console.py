@@ -220,7 +220,9 @@ class DebugConsole(Servers):
         while True:
             try:
                 self.prompt()
-                msg = sys.stdin.readline().strip() #.decode('ascii')
+                # this is the origin code, but when I ran, it export some errors...
+                #  msg = sys.stdin.readline().strip().decode('ascii')
+                msg = sys.stdin.readline().strip()
                 if not self.dh or not self.dh.remote.connected():
                     log.failure('No available instance')
                     return False

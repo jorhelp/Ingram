@@ -12,7 +12,7 @@ from PIL import Image
 
 CWD = os.path.dirname(__file__)
 sys.path.append(os.path.join(CWD, '..'))
-from utils.base import multi_thread
+from utils.base import multi_thread, printf
 from utils.net import get_user_agent
 from utils.config import TIMEOUT, MAX_RETRIES, DEBUG
 
@@ -66,16 +66,20 @@ def snapshot_switch(camera_info, snapshot_path):
                 root = ElementTree.fromstring(r.text)
                 channels = len(root)
             except Exception as e:
-                if DEBUG: print(e)
+                if DEBUG: printf(e, color='red', bold=True)
             # get all snapshots of all channels
             for ch in range(1, channels + 1):
                 url = f"http://{ip}:{port}/ISAPI/Streaming/channels/{ch}01/picture"
                 file_name = os.path.join(snapshot_path, f"{ip}-{port}-channel{ch}-{user}-{passwd}.jpg")
                 snapshot_by_url(url, file_name, auth=HTTPDigestAuth(user, passwd))
         # Dahua
-        elif device == 'Dahua':
-            url = f"http://{ip}:{port}/cgi-bin/snapshot.cgi"
-            snapshot_by_url(url, file_name, auth=HTTPDigestAuth(user, passwd))
+        elif device.startswith('Dahua'):
+            if '-' in device: channels = int(device.split('-')[1])
+            else: channels = 1
+            for ch in range(1, channels + 1):
+                url = f"http://{ip}:{port}/cgi-bin/snapshot.cgi?channel={ch}"
+                file_name = os.path.join(snapshot_path, f"{ip}-{port}-channel{ch}-{user}-{passwd}.jpg")
+                snapshot_by_url(url, file_name, auth=HTTPDigestAuth(user, passwd))
         # DLink
         elif device == 'DLink':
             url = f"http://{ip}:{port}/dms?nowprofileid=1"
@@ -92,7 +96,7 @@ def snapshot_by_url(url, file_name, auth=None):
                 with open(file_name, 'wb') as f: f.write(r.content)
                 break
         except Exception as e:
-            if DEBUG: print(e)
+            if DEBUG: printf(e, color='red', bold=True)
 
 
 # This one is not always work! Many bugs...
@@ -114,7 +118,7 @@ def snapshot_by_rtsp(ip, port, user, passwd, sv_path, multiplay=False):
                     img.save(os.path.join(sv_path, name))
                     break
     except Exception as e:
-        if DEBUG: print(e)
+        if DEBUG: printf(e, color='red', bold=True)
 
 
 if __name__ == '__main__':

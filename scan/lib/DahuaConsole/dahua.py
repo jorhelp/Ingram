@@ -56,7 +56,7 @@ class DahuaFunctions(Network):
             "object": self.instance_service('console', pull='object'),
         }
         if self.console_attach or self.args.force:
-            dh_data = self.p2p(query_args, sv_path=f"{self.rhost}-tmp")
+            dh_data = self.p2p(query_args)
             if dh_data is not None:
                 try:
                     dh_data = json.loads(dh_data)
