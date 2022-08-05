@@ -103,11 +103,12 @@ optional arguments:
   --hb_weak
   --cve_2021_36260
   --cve_2021_33044
+  --cve_2021_33045
   --cve_2017_7921
   --cve_2020_25078
   --th_num TH_NUM      the processes num
   --nosnap             do not capture snapshot
-  --masscan            run massscan sanner
+  --masscan            run masscan sanner
   --port PORT          same as masscan port
   --rate RATE          same as masscan rate
 ```
@@ -186,6 +187,8 @@ python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results_all.csv
 
 + [2022-07-23] **可以通过 CVE-2021-33044(Dahua) 来获取用户名与密码了！修改了摄像头快照逻辑(将rtsp替换为了http)，优化了运行速度**
     - **由于新版本加入了一些依赖包，需要重新配置环境!!!**
+
++ [2022-08-05] **增加了 CVE-2021-33045(Dahua NVR)，不过由于NVR设备的账号密码与真正的摄像头的账号密码可能不一致，所以快照功能并不总是有效**
 
 
 ## 免责声明

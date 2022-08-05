@@ -100,7 +100,7 @@ class CameraScanner(Base):
 
         results = defaultdict(lambda: defaultdict(lambda: 0))
         for i in items:
-            dev, vul = i[-2], i[-1]
+            dev, vul = i[-2].split('-')[0], i[-1]
             results[dev][vul] += 1
         results_sum = len(items)
         results_max = max([val for vul in results.values() for val in vul.values()])
@@ -142,7 +142,7 @@ class CameraScanner(Base):
                                 f" --device '{camera_info[4]}' --vulnerability '{camera_info[5]}'"
                                 f" --sv_path {self.args.out_path} > /dev/null 2> /dev/null")
         except Exception as e:
-            if DEBUG: print(e)
+            if DEBUG: printf(e, color='red', bold=True)
         finally:
             return found
 
@@ -160,6 +160,7 @@ class CameraScanner(Base):
             elif dev_type == 'dahua':
                 if 'dahua_weak' in self.modules: found |= self.scan_meta(ip, 'dahua_weak')
                 if 'cve_2021_33044' in self.modules: found |= self.scan_meta(ip, 'cve_2021_33044')
+                if 'cve_2021_33045' in self.modules: found |= self.scan_meta(ip, 'cve_2021_33045')
             elif dev_type == 'cctv':
                 if 'cctv_weak' in self.modules: found |= self.scan_meta(ip, 'cctv_weak')
             elif dev_type == 'dlink':
@@ -170,7 +171,6 @@ class CameraScanner(Base):
 
             with self.done_lock:
                 self.done += 1
-                # self.bar(self.total, self.done + 1, self.found, timer=True, start_time=self.start_time)
                 self.bar(self.total, self.done, self.found, timer=True, start_time=self.start_time)
 
         # write paused
