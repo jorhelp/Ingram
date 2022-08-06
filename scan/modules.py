@@ -33,7 +33,7 @@ def device_type(ip: str) -> list:
         f"http://{ip}",  # dlink
     ]
     # these are need to be hashed
-    for url in url_list[:3]:
+    for url in url_list[:-1]:
         try:
             r = requests.get(url, timeout=TIMEOUT, verify=False)
             if r.status_code == 200:
