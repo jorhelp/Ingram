@@ -190,6 +190,8 @@ python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results_all.csv
 
 + [2022-08-05] **Added CVE-2021-33045 (Dahua NVR), but the snapshot function is not always available because the NVR device's account&password may be different from the real camera**
 
++ [2022-08-06] **Added password disclosure module for Uniview camera, does not support snapshot yet**
+
 
 ## Disclaimer
 
