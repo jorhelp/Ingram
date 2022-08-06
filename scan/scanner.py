@@ -165,6 +165,8 @@ class CameraScanner(Base):
                 if 'cctv_weak' in self.modules: found |= self.scan_meta(ip, 'cctv_weak')
             elif dev_type == 'dlink':
                 if 'cve_2020_25078' in self.modules: found |= self.scan_meta(ip, 'cve_2020_25078')
+            elif dev_type == 'uniview-nvr':
+                if 'uniview_disclosure' in self.modules: found != self.scan_meta(ip, 'uniview_disclosure')
 
             if not found and dev_type != 'unidentified':
                 save_res([ip, dev_type], os.path.join(self.args.out_path, RESULTS_FAILED))
