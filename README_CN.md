@@ -190,6 +190,8 @@ python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results_all.csv
 
 + [2022-08-05] **增加了 CVE-2021-33045(Dahua NVR)，不过由于NVR设备的账号密码与真正的摄像头的账号密码可能不一致，所以快照功能并不总是有效**
 
++ [2022-08-06] **增加了 Uniview 设备的密码暴露模块，暂不支持快照**
+
 
 ## 免责声明
 
