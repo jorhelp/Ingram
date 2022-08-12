@@ -1,3 +1,4 @@
+colorama
 IPy
 rtsp
 flask
