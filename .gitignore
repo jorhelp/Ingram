@@ -1,4 +1,5 @@
 .git
+.DS_store
 __pycache__/
 /out/
 /test*
