@@ -4,10 +4,9 @@
 # Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
 # Style: DIM, NORMAL, BRIGHT, RESET_ALL
 #====================================================================
-
 from colorama import init, Fore, Style
 
-from Ingram.utils.base import os_check
+from Ingram.utils import os_check
 
 
 # wrap must be True when the os is windows
@@ -21,6 +20,7 @@ def _style(s, style):
 
 
 class ColorPalette:
+
     @staticmethod
     def red(s, style='normal'):
         return _style(Fore.RED + s + Fore.RESET, style)

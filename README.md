@@ -3,6 +3,9 @@
 </div>
 
 
++ new features: support windows, reconstructure, async, msg-queue
+
+
 <!-- icons -->
 <div align=center>
     <img alt="GitHub" src="https://img.shields.io/github/license/jorhelp/Ingram">

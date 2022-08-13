@@ -1,10 +1,11 @@
 """global configure arguments"""
-import collections
-
-
 class Config:
+
     def __init__(self):
-        self.config_dict = collections.defaultdict(lambda: None)
+        # the defaultdict doesn't report an error when you give a 
+        # nonexistent idx, which is difficult to trace errors during
+        # debugging, so we use python built-in dict.
+        self.config_dict = {}
 
     def set_val(self, key, val):
         self.config_dict[key] = val

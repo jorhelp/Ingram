@@ -7,9 +7,6 @@ from functools import partial
 from xml.etree import ElementTree
 from requests.auth import HTTPDigestAuth
 
-import rtsp
-from PIL import Image
-
 CWD = os.path.dirname(__file__)
 sys.path.append(os.path.join(CWD, '..'))
 from utils.base import multi_thread, printf
@@ -97,28 +94,6 @@ def snapshot_by_url(url, file_name, auth=None):
                 break
         except Exception as e:
             if DEBUG: printf(e, color='red', bold=True)
-
-
-# This one is not always work! Many bugs...
-def snapshot_by_rtsp(ip, port, user, passwd, sv_path, multiplay=False):
-    """get snapshot through rtsp """
-    try:
-        if not multiplay: url = f"rtsp://{user}:{passwd}@{ip}:554"
-        else: url = f"rtsp://{user}:{passwd}@{ip}:554/h264/ch0/main/av_stream"
-        with rtsp.Client(rtsp_server_uri=url, verbose=False) as client:
-            while client.isOpened():
-                img_bgr = client.read(raw=True)
-                if not img_bgr is None:
-                    img_rgb = img_bgr.copy()
-                    img_rgb[:,:,0] = img_bgr[:,:,2]
-                    img_rgb[:,:,1] = img_bgr[:,:,1]
-                    img_rgb[:,:,2] = img_bgr[:,:,0]
-                    name = f"{ip}-{port}-{user}-{passwd}.jpg"
-                    img = Image.fromarray(img_rgb)
-                    img.save(os.path.join(sv_path, name))
-                    break
-    except Exception as e:
-        if DEBUG: printf(e, color='red', bold=True)
 
 
 if __name__ == '__main__':
