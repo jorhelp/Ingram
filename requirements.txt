@@ -1,14 +1,10 @@
+aiohttp
 colorama
 IPy
-rtsp
-flask
-pillow
 requests
 wxpusher
-opencv_python
 ndjson
 pycryptodome
 tzlocal
 pyOpenSSL
-requests
 pwn

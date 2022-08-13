@@ -4,17 +4,17 @@ import random
 
 
 ingram_icon = r"""
-           _    __..-:┑
-   ║`=====╩=╩=======╣ |
-==#║________███_/ @ ║ |
-   ╚====.===╦==╦=╤==╩#█
-        \___║::║/      
-            ║::║|      
-            ║::║_\     
-             ██        
-             ██        
-             ██        
-             ██        
+          _    __..-:┑
+   ║`====╩=╩=======╣ |
+==#║_______███_/ @ ║ |
+   ╚===.===╦==╦=╤==╩#█
+       \___║::║/      
+           ║::║|      
+           ║::║_\     
+            ██        
+            ██        
+            ██        
+            ██        
 """
 
 
@@ -315,9 +315,10 @@ def generate_logo() -> list:
     """concatenate the icon and font"""
     icon = [i for i in ingram_icon.split('\n') if i.strip()]
     icon_width = max([len(i) for i in icon])
+    icon = [' ' * icon_width] + icon + [' ' * icon_width]
     icon_height = len(icon)
 
-    # do not longer than the terminal width!!!
+    # do not longger than the terminal width!!!
     found = False
     for _ in range(100):
         font = random.choice(ingram_fonts).split('\n')
