@@ -1,7 +1,7 @@
 """Network Tools"""
 import random
 import requests
-from lxml import etree
+from xml import etree
 
 import IPy
 
@@ -11,10 +11,12 @@ def get_ip_segment(start: str, end: str) -> str:
 
 
 def get_ip_seg_len(ip_seg: str) -> int:
-    return IPy.IP(ip_seg, make_net=True).len()
+    return IPy.IP(ip_seg, make_net=True).len() if '-' in ip_seg or '/' in ip_seg else 1
 
 
 def get_all_ip(ip_seg: str) -> list:
+    if ip_seg.count(':') == 1:
+        return [ip_seg]
     return [i.strNormal() for i in IPy.IP(ip_seg, make_net=True)]
 
 
