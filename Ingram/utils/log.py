@@ -10,5 +10,5 @@ def no_debug(record):
 def config_logger(log_file, debug=False):
     logger.remove(handler_id=None)  # do not print to terminal
     _format = "[{time:YYYY-MM-DD HH:mm:ss}][{level}][{module}.{function}] {message}"
-    if debug: logger.add(log_file, format=_format)
-    else: logger.add(log_file, format=_format, filter=no_debug)
+    if debug: logger.add(log_file, format=_format, rotation='200 MB')
+    else: logger.add(log_file, format=_format, filter=no_debug, rotation='200 MB')

@@ -23,35 +23,35 @@ class ColorPalette:
 
     @staticmethod
     def red(s, style='normal'):
-        return _style(Fore.RED + s + Fore.RESET, style)
+        return _style(Fore.RED + str(s) + Fore.RESET, style)
 
     @staticmethod
     def black(s, style='normal'):
-        return _style(Fore.BLACK + s + Fore.RESET, style)
+        return _style(Fore.BLACK + str(s) + Fore.RESET, style)
 
     @staticmethod
     def green(s, style='normal'):
-        return _style(Fore.GREEN + s + Fore.RESET, style)
+        return _style(Fore.GREEN + str(s) + Fore.RESET, style)
 
     @staticmethod
     def yellow(s, style='normal'):
-        return _style(Fore.YELLOW + s + Fore.RESET, style)
+        return _style(Fore.YELLOW + str(s) + Fore.RESET, style)
 
     @staticmethod
     def blue(s, style='normal'):
-        return _style(Fore.BLUE + s + Fore.RESET, style)
+        return _style(Fore.BLUE + str(s) + Fore.RESET, style)
 
     @staticmethod
     def magenta(s, style='normal'):
-        return _style(Fore.MAGENTA + s + Fore.RESET, style)
+        return _style(Fore.MAGENTA + str(s) + Fore.RESET, style)
 
     @staticmethod
     def cyan(s, style='normal'):
-        return _style(Fore.CYAN + s + Fore.RESET, style)
+        return _style(Fore.CYAN + str(s) + Fore.RESET, style)
 
     @staticmethod
     def white(s, style='normal'):
-        return _style(Fore.WHITE + s + Fore.RESET, style)
+        return _style(Fore.WHITE + str(s) + Fore.RESET, style)
 
 
 color = ColorPalette()
