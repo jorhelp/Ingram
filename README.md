@@ -1,5 +1,5 @@
 <div align=center>
-    <img alt="Ingram" src="https://github.com/jorhelp/Ingram/blob/master/Ingram/static/imgs/logo.png">
+    <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/logo.png">
 </div>
 
 
@@ -18,7 +18,9 @@
 
 主要针对网络摄像头的漏洞扫描框架，目前已集成海康、大华、宇视等常见设备。后期会加入更多摄像头设备和路由器设备。  
 
-![](Ingram/static/imgs/run_time.gif)
+<div align=center>
+    <img alt="run" src="https://github.com/jorhelp/imgs/blob/master/Ingram/run_time.gif">
+</div>
 
 
 ## 安装
@@ -98,12 +100,18 @@ config.set_val('WXTOKEN', '这里写token')
 ```
 
 + `results.csv` 里保存了完整的结果, 格式为: `ip,端口,设备类型,用户名,密码,漏洞条目`:  
-![](Ingram/static/imgs/results.png)
+
+<div align=center>
+    <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/results.png">
+</div>
 
 + `not_vulnerable.csv` 中保存的是没有暴露的设备
 
 + `snapshots` 中保存了部分设备的快照:  
-![](Ingram/static/imgs/snapshots.png)
+
+<div align=center>
+    <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/snapshots.png">
+</div>
 
 
 ## 实时预览 (由于部分原因已移除)
@@ -111,7 +119,10 @@ config.set_val('WXTOKEN', '这里写token')
 + ~~可以直接通过浏览器登录来预览~~
   
 + ~~如果想批量查看，我们提供了一个脚本 `show/show_rtsp/show_all.py`，不过它还有一些问题:~~
-![](Ingram/static/imgs/show_rtsp.png)
+
+<div align=center>
+    <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/show_rtsp.png">
+</div>
 
 
 ## 更新日志
