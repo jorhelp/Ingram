@@ -3,7 +3,7 @@
 </div>
 
 
-+ new features: support windows, reconstructure, async, msg-queue
++ new features: support windows, reconstructure, async, msg-queue, not masscan
 
 
 <!-- icons -->
@@ -51,8 +51,6 @@ pip install -r requirements.txt
 # Use '#' to comment (must have a single line!!)
 # Single ip
 192.168.0.1
-# Single ip with port
-192.168.0.2:80
 # IP segment with '/'
 192.168.0.0/16
 # IP segment with '-'

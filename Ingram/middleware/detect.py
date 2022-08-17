@@ -32,8 +32,6 @@ def device_detect(ip: str, port: str) -> str:
     # these are need to be hashed
     for url in url_list[:-1]:
         try:
-            # with aiohttp.ClientSession() as session:
-            #     r = session.get(url, timeout=timeout, verify=False)
             r = requests.get(url, timeout=timeout, verify=False)
             if r.status_code == 200:
                 hash_val = hashlib.md5(r.content).hexdigest()

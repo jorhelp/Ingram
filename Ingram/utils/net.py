@@ -16,8 +16,10 @@ def get_ip_seg_len(ip_seg: str) -> int:
 
 def get_all_ip(ip_seg: str) -> list:
     if ip_seg.count(':') == 1:
-        return [ip_seg]
-    return [i.strNormal() for i in IPy.IP(ip_seg, make_net=True)]
+        yield ip_seg
+    else:
+        for i in IPy.IP(ip_seg, make_net=True):
+            yield i.strNormal()
 
 
 def scrapy_useragent() -> None:

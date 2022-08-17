@@ -1,7 +1,5 @@
-"""scanners"""
+"""the scanner that produce data"""
 from Ingram.utils import logger
-from Ingram.utils import get_current_time
-from Ingram.middleware import progress_bar
 from Ingram.middleware import device_detect
 from Ingram.middleware import port_detect
 from Ingram.VDB import get_vul
@@ -9,11 +7,10 @@ from Ingram.VDB import get_vul
 
 class Scan:
 
-    def __init__(self, data, port):
+    def __init__(self, data, workshop, port):
         super().__init__()
         self.data = data
-        self.start_time = get_current_time()
-        self.bar = progress_bar(data.total, self.start_time)
+        self.workshop = workshop
 
         if type(port) == list: self.port = port
         else: self.port = [port]
@@ -42,22 +39,16 @@ class Scan:
                             if res[0]:
                                 vulnerable = True
                                 msg = [ip, port, device] + res[1:]
-                                with self.data.var_lock:
-                                    self.data.msg_queue.put(msg)
-                                    self.data.found += 1
-                                with self.data.file_lock:
-                                    self.data.vuls.writelines(','.join(msg[:6]) + '\n')
-                                    self.data.vuls.flush()
+                                self.workshop.put(msg)
+                                self.data.found_add()
+                                self.data.vul_add(','.join(msg[:6]) + '\n')
                         if not vulnerable:
                             record.append((port, device))
-            with self.data.var_lock:
-                self.data.done += 1
-                self.bar(self.data.done, self.data.found)
-            with self.data.file_lock:
-                for port, device in record:
-                    self.data.not_vuls.writelines(','.join([ip, port, device]) + '\n')
-                    self.data.not_vuls.flush()
-            # log the running state
-            logger.info(f"#@#{self.data.taskid}#@#{self.data.done}#@#running state")
+            # done
+            self.data.done_add()
+            for port, device in record:
+                self.data.not_vul_add(','.join([ip, port, device]) + '\n')
+            self.data.record_running_state()
+            
         except Exception as e:
             logger.error(e)
