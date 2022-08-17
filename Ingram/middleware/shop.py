@@ -28,9 +28,7 @@ def _snapshot_by_url(url, file_name, workshop, auth=None):
 
 def snapshot(camera_info, workshop):
     """select diff func to save snapshot"""
-    path = os.path.join(config['OUT'], 'snapshot')
-    if not os.path.exists(path):
-        os.mkdir(path)
+    path = workshop.output
     snapshot_by_url = partial(_snapshot_by_url, workshop=workshop)
 
     ip, port, device, user, passwd, vul = camera_info[:6]

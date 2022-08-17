@@ -53,7 +53,7 @@ class Core:
 
     def __init__(self):
         self.data = Data(config['IN'], config['OUT'])
-        self.workshop = Workshop(os.path.join(config['OUT'], 'snapshot'), config['TH'] // 4)
+        self.workshop = Workshop(os.path.join(config['OUT'], 'snapshots'), config['TH'] // 4)
         self.scan = Scan(self.data, self.workshop, config['PORT'])
         self.status = Thread(target=status, args=(self, ))
         self.consumer = Thread(target=consumer, args=(self, ))
