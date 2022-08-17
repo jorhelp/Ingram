@@ -1,68 +1,59 @@
-#! /usr/bin/env -S python3 -Bu
+#! /usr/bin/env python3
 # coding: utf-8
 # @Auth: Jor<jorhelp@qq.com>
 # @Date: Wed Apr 20 00:17:30 HKT 2022
 # @Desc: Ingram
 
-import argparse
-import warnings
-warnings.filterwarnings("ignore")
+import os
 
-from scan import scanner
-from utils.base import printf
-from utils.wechat import send_msg
-
-
-def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--in_file', type=str, required=True, help='the targets will be scan')
-    parser.add_argument('--out_path', type=str, default='results', help='the path where results saved')
-    parser.add_argument('--send_msg', action='store_true', help='send finished msg to you (by wechat or email)')
-
-    parser.add_argument('--all', action='store_true', help='scan all the modules of [hik_weak, dahua_weak, cve_...]')
-    parser.add_argument('--hik_weak', action='store_true')
-    parser.add_argument('--dahua_weak', action='store_true')
-    parser.add_argument('--cctv_weak', action='store_true')
-    parser.add_argument('--cve_2021_36260', action='store_true')
-    parser.add_argument('--cve_2021_33044', action='store_true')
-    parser.add_argument('--cve_2021_33045', action='store_true')
-    parser.add_argument('--cve_2017_7921', action='store_true')
-    parser.add_argument('--cve_2020_25078', action='store_true')
-    parser.add_argument('--uniview_disclosure', action='store_true')
-    parser.add_argument('--th_num', type=int, default=80, help='the processes num')
-    parser.add_argument('--nosnap', action='store_false', help='do not capture the snapshot')
-
-    parser.add_argument('--masscan', action='store_true', help='run massscan sanner')
-    parser.add_argument('--port', type=str, default=80, help='same as masscan port')
-    parser.add_argument('--rate', type=int, default=5000, help='same as masscan rate')
-
-    args = parser.parse_args()
-    return args
+from Ingram.utils import config
+from Ingram.utils import logo
+from Ingram.utils import color
+from Ingram.utils import wx_send
+from Ingram.utils import get_parse
+from Ingram.utils import logger, config_logger
+from Ingram.utils import get_user_agent
+from Ingram.core import Core
 
 
-def run(args):
-    # readme
-    flag, count = False, 0
-    colors = ['red', 'cyan', 'green', 'blue', 'pink', 'white']
-    with open('README.md', 'r') as f:
-        for line in f:
-            if line.startswith('#'): break
-            if line.startswith('```'):
-                if flag:
-                    print()
-                    count += 1
-                flag = not flag
-            elif flag: printf(line.rstrip(), color=colors[count % len(colors)], bold=True)
+def assemble_config(args):
+    config.set_val('IN', args.in_file)
+    config.set_val('OUT', args.out_dir)
+    config.set_val('TH', args.th_num)
+    config.set_val('DEBUG', args.debug)
+    config.set_val('TIMEOUT', args.time_out)
+    config.set_val('PORT', args.port)
 
-    # scan
-    if args.masscan: scn = scanner.MasScaner(args)
-    else: scn = scanner.CameraScanner(args)
-    scn()
+    config.set_val('MAXTRY', 2)  # since requests maybe failed, try N times
+    config.set_val('LOGFILE', os.path.join(args.out_dir, 'log.txt'))  # log file
+    config_logger(config['LOGFILE'], config['DEBUG'])  # logger configuration
+    config.set_val('USERAGENT', get_user_agent())  # to save time, we only get user agent once.
 
-    # finished
-    if args.send_msg: send_msg(f"{scn.scanner_name} finished!")
+    #--------- config below can be modified ---------
+    config.set_val('USERS', ['admin'])  # user names for Brute force cracking of weak passwords
+    config.set_val('PASSWDS', ['admin', 'admin12345', 'asdf1234', 'abc12345', '12345admin', '12345abc'])
+    config.set_val('WXUID', '')  # weechat uid used by wxpusher
+    config.set_val('WXTOKEN', '')  # token used by wxpusher
 
 
 if __name__ == '__main__':
-    args = get_parser()
-    run(args)
+    try:
+        # logo
+        for icon, font in zip(*logo):
+            print(f"{color.yellow(icon, 'bright')}  {color.magenta(font, 'bright')}")
+        args = get_parse()  # args
+        assemble_config(args)  # assemble global config vars
+        core = Core()  # get ingram core
+        core()  # run
+        logger.info('Ingram done!')
+        if config['WXUID'] and config['WXTOKEN']:
+            try:
+                wx_send('Ingram done!')
+            except Exception as e:
+                logger.error(e)
+    except KeyboardInterrupt as e:
+        exit(0)
+    except Exception as e:
+        logger.warning(e)
+        print(color.red(f"error occurred, see the {config['OUT']}/log.txt for more information."))
+        exit(0)
