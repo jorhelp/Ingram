@@ -5,13 +5,12 @@
 
 <!-- icons -->
 <div align=center>
-    <img alt="Platform" src="https://img.shields.io/badge/platform-Linux%20|%20Mac-lightgrey.svg">
+    <img alt="Platform" src="https://img.shields.io/badge/platform-Linux%20|%20Mac-blue.svg">
     <img alt="Python Version" src="https://img.shields.io/badge/python-3.7|3.8-yellow.svg">
     <img alt="GitHub" src="https://img.shields.io/github/license/jorhelp/Ingram">
-    <img alt="Languages Count" src="https://img.shields.io/github/languages/count/jorhelp/Ingram?style=social">
     <img alt="Github Checks" src="https://img.shields.io/github/checks-status/jorhelp/Ingram/master">
-    <img alt="GitHub Issues" src="https://img.shields.io/github/issues/jorhelp/Ingram">
     <img alt="GitHub Last Commit (master)" src="https://img.shields.io/github/last-commit/jorhelp/Ingram/master">
+    <img alt="Languages Count" src="https://img.shields.io/github/languages/count/jorhelp/Ingram?style=social">
 </div>
 
 
