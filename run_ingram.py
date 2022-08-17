@@ -9,6 +9,7 @@ import os
 from Ingram.utils import config
 from Ingram.utils import logo
 from Ingram.utils import color
+from Ingram.utils import wx_send
 from Ingram.utils import get_parse
 from Ingram.utils import logger, config_logger
 from Ingram.utils import get_user_agent
@@ -45,6 +46,11 @@ if __name__ == '__main__':
         core = Core()  # get ingram core
         core()  # run
         logger.info('Ingram done!')
+        if config['WXUID'] and config['WXTOKEN']:
+            try:
+                wx_send('Ingram done!')
+            except Exception as e:
+                logger.error(e)
     except KeyboardInterrupt as e:
         exit(0)
     except Exception as e:

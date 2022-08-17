@@ -20,6 +20,8 @@ class Workshop:
     def preprocess(self):
         if os.path.exists(self.output):
             self.done = len(os.listdir(self.output))
+        else:
+            os.mkdir(self.output)
 
     def put(self, msg):
         with self.var_lock:

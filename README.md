@@ -1,192 +1,145 @@
 <div align=center>
-    <img alt="Ingram" src="https://github.com/jorhelp/Ingram/blob/master/statics/imgs/logo.png">
+    <img alt="Ingram" src="https://github.com/jorhelp/Ingram/blob/master/Ingram/static/imgs/logo.png">
 </div>
-
-
-+ new features: support windows, reconstructure, async, msg-queue, not masscan
 
 
 <!-- icons -->
 <div align=center>
+    <img alt="Platform" src="https://img.shields.io/badge/platform-Linux%20|%20Mac-lightgrey.svg">
+    <img alt="Python Version" src="https://img.shields.io/badge/python-3.7|3.8-yellow.svg">
     <img alt="GitHub" src="https://img.shields.io/github/license/jorhelp/Ingram">
-    <img alt="GitHub issues" src="https://img.shields.io/github/issues/jorhelp/Ingram">
-    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/jorhelp/Ingram">
-    <img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/jorhelp/Ingram/master">
+    <img alt="Languages Count" src="https://img.shields.io/github/languages/count/jorhelp/Ingram?style=social">
+    <img alt="Github Checks" src="https://img.shields.io/github/checks-status/jorhelp/Ingram/master">
+    <img alt="GitHub Issues" src="https://img.shields.io/github/issues/jorhelp/Ingram">
+    <img alt="GitHub Last Commit (master)" src="https://img.shields.io/github/last-commit/jorhelp/Ingram/master">
 </div>
 
 
-English | [简体中文](https://github.com/jorhelp/Ingram/blob/master/README_CN.md)
+## 简介
 
-
-## Introduction
-
+主要针对网络摄像头的漏洞扫描框架，目前已集成海康、大华、宇视等常见设备。后期会加入更多摄像头设备和路由器设备。
 ![](statics/imgs/run_time.gif)
 
-Schools, hospitals, shopping malls, restaurants, and other places where equipment is not well maintained, there will always be vulnerabilities, either because they are not patched in time or because weak passwords are used to save trouble.
+## 安装
 
-This tool can use multiple threads to batch detect whether there are vulnerabilities in the cameras on the local or public network, so as to repair them in time and improve device security.
+**Windows 仍有部分bug，Linux 与 Mac可以正常使用。请确保安装了3.7及以上版本的Python，推荐3.8**
 
-**Only successfully tested on Mac and Linux, but not on Windows!**
-
-
-## Installation
-
-+ Clone this repository by:
++ 克隆该仓库:
 ```bash
 git clone https://github.com/jorhelp/Ingram.git
 ```
 
-+ **Make sure the Python version you use is >= 3.7**, and install packages by:
++ 进入项目目录安装依赖:
 ```bash
 cd Ingram
 pip install git+https://github.com/arthaud/python3-pwntools.git
 pip install -r requirements.txt
 ```
 
+至此安装完毕！
 
-## Preparation
 
-+ You should prepare a target file, which contains the ip addresses will be scanned. The following formats are allowed:
+## 运行
+
++ 你需要准备一个目标文件，比如 target.txt，里面保存着你要扫描的 IP 地址，每行一个目标，具体格式如下：
 ```
-# Use '#' to comment (must have a single line!!)
-# Single ip
+# 你可以使用井号(#)来进行注释
+# 单个的 IP 地址
 192.168.0.1
-# IP segment with '/'
+# IP 地址以及要扫描的端口
+192.168.0.2:80
+# 带 '/' 的IP段
 192.168.0.0/16
-# IP segment with '-'
+# 带 '-' 的IP段
 192.168.0.0-192.168.255.255
 ```
 
-+ The `utils/config.py` file already specifies some usernames and passwords to support weak password scanning. You can expand or decrease it:
-```python
-# camera
-USERS = ['admin']
-PASSWORDS = ['admin', 'admin12345', 'asdf1234', '12345admin', '12345abc']
++ 之后运行:
+```bash
+python run_ingram.py -i 你要扫描的文件 -o 输出文件夹
 ```
 
-+ (**Optional**) If you use wechat app, and want to get a reminder on your phone. You need to follow [wxpusher](https://wxpusher.zjiecode.com/docs/) instructions to get your *UID* and *APP_TOKEN*, and write them to `utils/config.py`:
++ 其他参数：
+```
+optional arguments:
+  -h, --help            打印参数信息
+  -i IN_FILE, --in_file IN_FILE
+                        要扫描的文件
+  -o OUT_DIR, --out_dir OUT_DIR
+                        扫描结果输出路径
+  -p PORT [PORT ...], --port PORT [PORT ...]
+                        要扫描的端口，默认为80，可以指定多个端口，比如 -p 80 81 82
+  -t TH_NUM, --th_num TH_NUM
+                        并发数目，默认为64，视网络状况自行调整
+  -T TIME_OUT, --time_out TIME_OUT
+                        超时
+  --debug               调试模式
+```
+
++ (**可选**) 扫描时间可能会很长，如果你想让程序扫描结束的时候通过微信发送一条提醒的话，你需要按照 [wxpusher](https://wxpusher.zjiecode.com/docs/) 的指示来获取你的专属 *UID* 和 *APP_TOKEN*，并将其写入 `run_ingram.py`:
 ```python
 # wechat
-UIDS = ['This is your UID', 'This is another UID if you have', ...]
-TOKEN = 'This is your APP_TOKEN'
+config.set_val('WXUID', '这里写uid')
+config.set_val('WXTOKEN', '这里写token')
 ```
 
-+ (**Optional**) Email is not supported yet...
++ 支持中断恢复，不过由于每5分钟记录一次运行状态，所以并不能准确恢复到上次的运行状态。
 
 
-## Run
-
-```shell
-optional arguments:
-  -h, --help           show this help message and exit
-  --in_file IN_FILE    the targets will be scan
-  --out_path OUT_PATH  the path where results saved
-  --send_msg           send finished msg to you (by wechat or email)
-  --all                scan all the modules of [hik_weak, dahua_weak, cve_...]
-  --hik_weak
-  --dahua_weak
-  --cctv_weak
-  --hb_weak
-  --cve_2021_36260
-  --cve_2021_33044
-  --cve_2021_33045
-  --cve_2017_7921
-  --cve_2020_25078
-  --th_num TH_NUM      the processes num
-  --nosnap             do not capture snapshot
-  --masscan            run masscan sanner
-  --port PORT          same as masscan port
-  --rate RATE          same as masscan rate
-```
-
-+ Scan with all modules (**TARGET** is your ip file, **OUT_DIR** is the path where results will be saved):
-```bash
-# th_num number of threads needs to be adjusted by yourself to state of your network
-./run_ingram.py --in TARGET --out OUT_DIR --all --th_num 80
-
-# If you use wechat, then the --send_msg should be provided:
-./run_ingram.py --in TARGET --out OUT_DIR --all --th_num 80 --send_msg
-```
-
-+ Snapshots (Snapshoting is supported by default, but you can disable it with --nosnap if you think it's too slow)
-```bash
-./run_ingram.py --in TARGET --out OUT_DIR --all --th_num 80 --nosnap
-```
-
-+ There are some *IP FILE* in `statics/iplist/data/` that you can use, for example:
-```bash
-./run_ingram.py --in statics/iplist/data/country/JP.txt --out OUT_DIR --all --th_num 80
-```
-
-+ All modules can be combined arbitrarily to scan, for example, if you want to scan Hikvision, then:
-```bash
-./run_ingram.py --in TARGET --out OUT_DIR --hik_weak --cve_2017_7921 --cve_2021_36260 --th_num 80
-```
-
-+ Direct scanning can be slow. You can use the Masscan to speed up. The Masscan needs to be installed in advance. For example, we find hosts whose port 80 and 8000 to 8008 opened and scan them:
-```shell
-./run_ingram.py --in TARGET --out OUT_DIR --masscan --port 80,8000-8008 --rate 5000
-./run_ingram.py --in OUT_DIR/masscan_res --out OUT_DIR --all --th_num 80
-```
-
-+ If your program breaks due to network or other reasons, you can continue the previous process by simply running the command that ran last time. For example, the last command you executed was `./run_ingram.py --in ip.txt --out output --all --th_num 80`, to resume, simply continue `./run_ingram.py --in ip.txt --out output --all --th_num 80`, also for the masscan.
-
-
-## Results
+## 结果
 
 ```bash
 .
 ├── not_vulnerable.csv
-├── results_all.csv
-├── results_simple.csv
-└── snapshots
+├── results.csv
+├── snapshots
+└── log.txt
 ```
 
-+ The comprehensive results are saved in the `OUT_DIR/results_all.csv` file, and each line is `ip,port,user,passwd,device,vulnerability`:   
-![](statics/imgs/results.png)
++ `results.csv` 里保存了完整的结果, 格式为: `ip,端口,设备类型,用户名,密码,漏洞条目`:  
+![](Ingram/static/imgs/results.png)
 
-+ The `OUT_DIR/results_simple.csv` file contains only the target with the password, in the format of `IP,port,user,passwd`
++ `not_vulnerable.csv` 中保存的是没有暴露的设备
 
-+ `OUT_DIR/not_vulnerable.csv` file is stored in the target without vulnerability exposure
-
-+ Some camera's snapshots can be found in `OUT_DIR/snapshots/`:  
-![](statics/imgs/snapshots.png)
++ `snapshots` 中保存了部分设备的快照:  
+![](Ingram/static/imgs/snapshots.png)
 
 
-## The Live
+## 实时预览 (由于部分原因已移除)
 
-+ You can log in directly from the browser to see the live screen.
++ ~~可以直接通过浏览器登录来预览~~
   
-+ If you want to view the live screen in batch, we provided a script: `show/show_rtsp/show_all.py`, though it has some flaws:
-```shell
-python3 -Bu show/show_rtsp/show_all.py OUT_DIR/results_all.csv
-```
-
-![](statics/imgs/show_rtsp.png)
++ ~~如果想批量查看，我们提供了一个脚本 `show/show_rtsp/show_all.py`，不过它还有一些问题:~~
+![](Ingram/static/imgs/show_rtsp.png)
 
 
-## Change Logs
+## 更新日志
 
-+ [2022-06-11] **Optimized running speed; Supportted storage of the not vulnerable targets**
++ [2022-06-11] **优化运行速度，支持存储非暴露设备，支持中断恢复**
 
-+ [2022-06-11] **Resume supported!!!**
++ [2022-07-23] **可以通过 CVE-2021-33044(Dahua) 来获取用户名与密码了！修改了摄像头快照逻辑(将rtsp替换为了http)，优化了运行速度**
+    - **由于新版本加入了一些依赖包，需要重新配置环境!!!**
 
-+ [2022-07-23] **You can obtain the user and password through CVE-2021-33044(Dahua)!!! Updated snapshot logic (change rtsp to http), optimized running speed.**
-    - **Since the new version adds some dependency packages, the environment needs to be reconfigured!**
++ [2022-08-05] **增加了 CVE-2021-33045(Dahua NVR)，不过由于NVR设备的账号密码与真正的摄像头的账号密码可能不一致，所以快照功能并不总是有效**
 
-+ [2022-08-05] **Added CVE-2021-33045 (Dahua NVR), but the snapshot function is not always available because the NVR device's account&password may be different from the real camera**
++ [2022-08-06] **增加了 宇视 设备的密码暴露模块，暂不支持快照**
 
-+ [2022-08-06] **Added password disclosure module for Uniview camera, does not support snapshot yet**
++ [2022-08-17] **比较大的一次更新，我们重构了所有代码 (需要重新配置环境)，具体如下：**
+    - 重构了代码结构，便于以后集成更多漏洞，移除部分依赖包，减少了超参数
+    - 将多线程替换为协程，速度较之前有明显提升
+    - 解决了子进程无法自动关闭的bug
+    - 去掉了对masscan的支持，因为新版本会自动探测端口，当然你还可以把masscan的结果ip提取出来作为Ingram的输入
+    - 去掉了若干与设备相关的超参数，新版本会自动探测设备
+    - 不再内置iplist，因为其太占空间且不便于维护，需要的可以自己去网上找
 
 
-## Disclaimer
+## 免责声明
 
-This tool is only for learning and safety testing, do not fucking use it for illegal purpose, all legal consequences caused by this tool will be borne by the user!!!
+本工具仅供安全测试，严禁用于非法用途，后果与本团队无关
 
 
-## Acknowledgements & References
+## 鸣谢 & 引用
 
 Thanks to [Aiminsun](https://github.com/Aiminsun/CVE-2021-36260) for CVE-2021-36260  
 Thanks to [chrisjd20](https://github.com/chrisjd20/hikvision_CVE-2017-7921_auth_bypass_config_decryptor) for hidvision config file decryptor  
-Thanks to [metowolf](https://github.com/metowolf/iplist) for ip list  
 Thanks to [mcw0](https://github.com/mcw0/DahuaConsole) for DahuaConsole
