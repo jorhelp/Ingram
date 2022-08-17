@@ -7,6 +7,7 @@ import requests
 
 from Ingram.utils import config
 from Ingram.utils import logger
+from Ingram.utils import run_cmd
 
 
 def dh_console(ip, port, proto='dhip'):
@@ -14,18 +15,26 @@ def dh_console(ip, port, proto='dhip'):
     console = os.path.join(CWD, 'lib/DahuaConsole/Console.py')
     user, passwd = '', ''
     try:
-        with os.popen(f"""
-        (
+        # with os.popen(f"""
+        # (
+        #     echo "OnvifUser -u"
+        #     echo "quit all"
+        # ) | python -Bu {console} --logon netkeyboard --rhost {ip} --rport {port} --proto {proto} 2>/dev/null
+        # """) as f: items = [line.strip() for line in f]
+        cmd = f"""(
             echo "OnvifUser -u"
             echo "quit all"
         ) | python -Bu {console} --logon netkeyboard --rhost {ip} --rport {port} --proto {proto} 2>/dev/null
-        """) as f: items = [line.strip() for line in f]
-        logger.debug(items)
-        for idx, val in enumerate(items):
-            if 'Name' in val:
-                user = val.split(':')[-1].strip().strip(',').replace('"', '') 
-                passwd = items[idx + 1].split(':')[-1].strip().strip(',').replace('"', '')
-                break
+        """
+        code, msg = run_cmd(cmd)
+        if code == 0:
+            items = msg.split('\n')
+            logger.debug(items)
+            for idx, val in enumerate(items):
+                if 'Name' in val:
+                    user = val.split(':')[-1].strip().strip(',').replace('"', '') 
+                    passwd = items[idx + 1].split(':')[-1].strip().strip(',').replace('"', '')
+                    break
     except Exception as e:
         logger.error(e)
     return user, passwd
