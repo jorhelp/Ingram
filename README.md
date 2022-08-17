@@ -32,8 +32,8 @@ git clone https://github.com/jorhelp/Ingram.git
 + 进入项目目录安装依赖:
 ```bash
 cd Ingram
-pip install git+https://github.com/arthaud/python3-pwntools.git
-pip install -r requirements.txt
+pip3 install git+https://github.com/arthaud/python3-pwntools.git
+pip3 install -r requirements.txt
 ```
 
 至此安装完毕！
