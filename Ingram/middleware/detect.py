@@ -10,12 +10,14 @@ from Ingram.utils import logger
 
 
 DEV_HASH = {
-    '4ff53be6165e430af41d782e00207fda': 'dahua',
-    '89b932fcc47cf4ca3faadb0cfdef89cf': 'hikvision',
-    'f066b751b858f75ef46536f5b357972b': 'cctv',
-    '1536f25632f78fb03babedcb156d3f69': 'uniview-nvr',
-    'c30a692ad0d1324389485de06c96d9b8': 'uniview-dev',
+    '4ff53be6165e430af41d782e00207fda': config.DAHUA,
+    '89b932fcc47cf4ca3faadb0cfdef89cf': config.HIKVISION,
+    'f066b751b858f75ef46536f5b357972b': config.CCTV,
+    '1536f25632f78fb03babedcb156d3f69': config.UNIVIEWNVR,
+    'c30a692ad0d1324389485de06c96d9b8': 'uniview-dev',  # bugs
 }
+HEADERS = {'User-Agent': config.USERAGENT}
+TIMEOUT = config.TIMEOUT
 
 
 def device_detect(ip: str, port: str) -> str:
@@ -27,12 +29,11 @@ def device_detect(ip: str, port: str) -> str:
         f"http://{ip}/skin/default_1/images/logo.png",  # uniview-dev
         f"http://{ip}",  # dlink
     ]
-    timeout = config['TIMEOUT']
 
     # these are need to be hashed
     for url in url_list[:-1]:
         try:
-            r = requests.get(url, timeout=timeout, verify=False)
+            r = requests.get(url, timeout=TIMEOUT, verify=False, headers=HEADERS)
             if r.status_code == 200:
                 hash_val = hashlib.md5(r.content).hexdigest()
                 if hash_val in DEV_HASH:
@@ -42,9 +43,10 @@ def device_detect(ip: str, port: str) -> str:
             logger.error(e)
     # not hash
     try:
-        r = requests.get(url_list[-1], timeout=timeout, verify=False)
-        if 'realm="DCS' in str(r.headers):
-            return 'dlink'
+        r = requests.get(url_list[-1], timeout=TIMEOUT, verify=False, headers=HEADERS)
+        if 'WWW-Authenticate' in r.headers:
+            if 'realm="DCS' in r.headers.get('WWW-Authenticate'):
+                return 'dlink'
     except Exception as e:
         logger.error(e)
 
@@ -53,13 +55,15 @@ def device_detect(ip: str, port: str) -> str:
 
 def port_detect(ip: str, port: str) -> bool:
     """detect whether the port is open"""
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(config['TIMEOUT'])
+    s = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+    s.settimeout(TIMEOUT)
     try:
-        s.connect((ip, int(port)))
-        s.shutdown(socket.SHUT_RDWR)
-        logger.info(f"{ip} detect {port} is open")
-        return True
+        res = s.connect_ex((ip, int(port)))
+        if res == 0:
+            logger.info(f"{ip} detect {port} is open")
+            s.close()
+            return True
     except Exception as e:
+        s.close()
         logger.error(e)
     return False

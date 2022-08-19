@@ -1,20 +1,24 @@
 """global configure arguments"""
+from Ingram.utils.base import singleton
+from Ingram.utils.net import get_user_agent
+
+
+@singleton
 class Config:
 
     def __init__(self):
-        # the defaultdict doesn't report an error when you give a 
-        # nonexistent idx, which is difficult to trace errors during
-        # debugging, so we use python built-in dict.
-        self.config_dict = {}
+        self.MAXTRY = 2  # since requests maybe failed, try N times
+        self.TIMEOUT = 3  # (default) will be reset in the run_ingram.py
+        self.USERS = ['admin']  # user names for Brute force cracking of weak passwords
+        self.PASSWDS = ['admin', 'admin12345', 'asdf1234', 'abc12345', '12345admin', '12345abc']
+        self.USERAGENT = get_user_agent()  # to save time, we only get user agent once.
 
-    def set_val(self, key, val):
-        self.config_dict[key] = val
-
-    def get_val(self, key):
-        return self.config_dict[key]
-
-    def __getitem__(self, key):
-        return self.config_dict[key]
+        # device names
+        self.HIKVISION = 'hikvision'
+        self.DAHUA = 'dahua'
+        self.UNIVIEWNVR = 'uniview-nvr'
+        self.DLINK = 'dlink'
+        self.CCTV = 'cctv'
 
 
 global config

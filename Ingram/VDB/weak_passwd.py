@@ -5,14 +5,20 @@ from Ingram.utils import config
 from Ingram.utils import logger
 
 
+USERS = config.USERS
+PASSWDS = config.PASSWDS
+TIMEOUT = config.TIMEOUT
+USERAGENT = config.USERAGENT
+
+
 def hikvision_weak(ip: str) -> list:
     url = f"http://{ip}/ISAPI/Security/userCheck"
-    headers = {'User-Agent': config['USERAGENT']}
-    timeout = config['TIMEOUT']
-    for user in config['USERS']:
-        for passwd in config['PASSWDS']:
+    headers = {'User-Agent': USERAGENT}
+    timeout = TIMEOUT
+    for user in USERS:
+        for passwd in PASSWDS:
             try:
-                r = requests.get(url, auth=(user, passwd), timeout=timeout, headers=headers, verify=False)
+                r = requests.get(url, auth=(user, passwd), timeout=TIMEOUT, headers=headers, verify=False)
                 if r.status_code == 200 and 'userCheck' in r.text and 'statusValue' in r.text and '200' in r.text:
                     return [True, str(user), str(passwd), 'weak-passwd']
             except Exception as e:
@@ -22,9 +28,8 @@ def hikvision_weak(ip: str) -> list:
 
 def dahua_weak(ip: str) -> list:
     url = f"http://{ip}/RPC2_Login"
-    timeout = config['TIMEOUT']
     headers = {
-        'User-Agent': config['USERAGENT'],
+        'User-Agent': USERAGENT,
         'Host': ip,
         'Origin': 'http://' + ip,
         'Referer': 'http://' + ip,
@@ -35,8 +40,8 @@ def dahua_weak(ip: str) -> list:
         'Connection': 'close',
         'X-Requested-With': 'XMLHttpRequest',
     }
-    for user in config['USERS']:
-        for passwd in config['PASSWDS']:
+    for user in USERS:
+        for passwd in PASSWDS:
             _json = {
                 "method": "global.login",
                 "params": {
@@ -51,7 +56,7 @@ def dahua_weak(ip: str) -> list:
                 "session": 0,
             }
             try:
-                r = requests.post(url, headers=headers, json=_json, verify=False, timeout=timeout)
+                r = requests.post(url, headers=headers, json=_json, verify=False, timeout=TIMEOUT)
                 if r.status_code == 200 and r.json()['result'] == True:
                     return [True, str(user), str(passwd), 'weak-passwd']
             except Exception as e:
@@ -60,13 +65,12 @@ def dahua_weak(ip: str) -> list:
 
 
 def cctv_weak(ip: str) -> list:
-    headers = {'User-Agent': config['USERAGENT']}
-    timeout = config['TIMEOUT']
-    for user in config['USERS']:
-        for passwd in config['PASSWDS']:
+    headers = {'User-Agent': USERAGENT}
+    for user in USERS:
+        for passwd in PASSWDS:
             url = f'http://{ip}/cgi-bin/gw.cgi?xml=<juan ver="" squ="" dir="0"><rpermission usr="{user}" pwd="{passwd}"><config base=""/><playback base=""/></rpermission></juan>'
             try:
-                r = requests.get(url, headers=headers, verify=False, timeout=timeout)
+                r = requests.get(url, headers=headers, verify=False, timeout=TIMEOUT)
                 if r.status_code == 200 and '<rpermission' in r.text:
                     items = r.text.split()
                     idx = items.index('<rpermission')
@@ -79,16 +83,15 @@ def cctv_weak(ip: str) -> list:
 
 # still bugs...
 def uniview_weak(ip: str) -> list:
-    headers = {'User-Agent': config['USERAGENT']}
+    headers = {'User-Agent': USERAGENT}
 
 
 # still bugs...
 def dlink_weak(ip: str) -> list:
-    headers = {'User-Agent': config['USERAGENT']}
-    timeout = config['TIMEOUT']
-    for user in config['USERS']:
-        for p in config['PASSWDS']:
-            r = requests.get(f"http://{ip}", verify=False, headers=headers, timeout=timeout, auth=(user, p))
+    headers = {'User-Agent': USERAGENT}
+    for user in USERS:
+        for p in PASSWDS:
+            r = requests.get(f"http://{ip}", verify=False, headers=headers, timeout=TIMEOUT, auth=(user, p))
             if r.status_code == 200 and 'D-Link' in r.text:
                 return [True, str(user), str(p), 'weak pass']
     return [False, ]

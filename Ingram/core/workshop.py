@@ -1,5 +1,6 @@
 """the workshop that load data and produce product"""
 import os
+from queue import Queue
 from threading import RLock
 from concurrent.futures import ThreadPoolExecutor
 
@@ -11,7 +12,7 @@ class Workshop:
     def __init__(self, output, th_num=8):
         self.output = output
         self.var_lock = RLock()
-        self.pipeline = []
+        self.pipeline = Queue(th_num * 2)
         self.workers = ThreadPoolExecutor(th_num)
         self.done = 0
 
@@ -24,17 +25,15 @@ class Workshop:
             os.mkdir(self.output)
 
     def put(self, msg):
-        with self.var_lock:
-            self.pipeline.append(msg)
+        # Queue 自带锁, 且会阻塞
+        self.pipeline.put(msg)
 
     def empty(self):
-        with self.var_lock:
-            return len(self.pipeline) == 0
+        return self.pipeline.empty()
 
     def get(self):
-        if not self.empty():
-            with self.var_lock:
-                return self.pipeline.pop(0)
+        # Queue 自带锁, 且会阻塞
+        return self.pipeline.get()
 
     def get_done(self):
         with self.var_lock:

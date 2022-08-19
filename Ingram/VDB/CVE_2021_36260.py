@@ -93,6 +93,7 @@ def cve_2021_36260(ip: str) -> list:
         data = remote.send(query_args=f"{cmd}>webLib/x")
         if data is not None:
             data = remote.send(url='/x', query_args=None)
+            del remote
             if data.status_code == 200 and data.text.strip() == '/home':
                 return [True, '', '', 'cve-2021-36260']
     except Exception as e:

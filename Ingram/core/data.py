@@ -1,5 +1,6 @@
 """the data that produced by scanner and send to workshop"""
 import os
+import IPy
 import hashlib
 from multiprocessing import Pool
 
@@ -9,7 +10,6 @@ from Ingram.utils import color
 from Ingram.utils import logger
 from Ingram.utils import singleton
 from Ingram.utils import get_current_time
-from Ingram.utils import get_ip_seg_len, get_all_ip
 
 
 @singleton
@@ -30,23 +30,17 @@ class Data:
 
         self.preprocess()
 
-    def preprocess(self):
-        if not os.path.isfile(self.input):
-            print(color.red(f"the input file {self.input} does not exists!"))
-            exit(0)
-
-        if not os.path.exists(self.output):
-            os.mkdir(self.output)
-
+    def get_data_from_disk(self):
+        """对于比较耗时的工作，用一个单独的线程放到后台执行"""
+        # get total ip
         with open(self.input, 'r') as f:
-            self.lines = [l.strip() for l in f if not l.startswith('#') and l.strip()]
-        if len(self.lines) == 0:
-            print(color.red(f"the input file {self.input} has nothing to scan!"))
+            for line in f:
+                if (not line.startswith('#')) and line.rstrip():
+                    if '-' in line or '/' in line:
+                        self.total += IPy.IP(line.rstrip(), make_net=True).len()
+                    else: self.total += 1
 
-        # total
-        with Pool(processes=None) as pool:
-            self.total = sum(pool.map_async(get_ip_seg_len, self.lines).get())
-
+    def preprocess(self):
         # done
         with open(os.path.join(self.output, 'log.txt'), 'r') as f:
             loglines = f.readlines()
@@ -88,8 +82,14 @@ class Data:
         self.not_vul = open(os.path.join(self.output, 'not_vulnerable.csv'), 'a')
 
     def ip_generate(self):
-        for line in self.lines:
-            yield from get_all_ip(line)
+        with open(self.input, 'r') as f:
+            for line in f:
+                if (not line.startswith('#')) and line.rstrip():
+                    if ':' in line:  # ip:port
+                        yield line.rstrip()
+                    else:
+                        for ip in IPy.IP(line.rstrip(), make_net=True):
+                            yield ip.strNormal()
 
     def get_total(self):
         with self.var_lock:

