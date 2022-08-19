@@ -62,6 +62,11 @@ pip3 install -r requirements.txt
 python run_ingram.py -i 你要扫描的文件 -o 输出文件夹
 ```
 
++ 默认的并发数目可能对你的宽带来说 so easy 了， 你可以根据网络情况适当增大，比如在我测试机上将并发数目加到800依然运行良好，而且速度极快:
+```bash
+python run_ingram.py -i 你要扫描的文件 -o 输出文件夹 -t 800
+```
+
 + 其他参数：
 ```
 optional arguments:
@@ -73,7 +78,7 @@ optional arguments:
   -p PORT [PORT ...], --port PORT [PORT ...]
                         要扫描的端口，默认为80，可以指定多个端口，比如 -p 80 81 82
   -t TH_NUM, --th_num TH_NUM
-                        并发数目，默认为64，视网络状况自行调整
+                        并发数目，视网络状况自行调整
   -T TIME_OUT, --time_out TIME_OUT
                         超时
   --debug               调试模式
@@ -86,7 +91,7 @@ config.set_val('WXUID', '这里写uid')
 config.set_val('WXTOKEN', '这里写token')
 ```
 
-+ 支持中断恢复，不过由于每5分钟记录一次运行状态，所以并不能准确恢复到上次的运行状态。
++ 支持中断恢复，不过由于每5分钟记录一次运行状态，所以并不能准确恢复到上次的运行状态。(这里做的比较粗糙，下个版本调整)
 
 
 ## 结果
@@ -114,7 +119,7 @@ config.set_val('WXTOKEN', '这里写token')
 </div>
 
 
-## 实时预览 (由于部分原因已移除)
+## ~~实时预览~~ (由于部分原因已移除)
 
 + ~~可以直接通过浏览器登录来预览~~
   
@@ -143,6 +148,7 @@ config.set_val('WXTOKEN', '这里写token')
     - 去掉了对masscan的支持，因为新版本会自动探测端口，当然你还可以把masscan的结果ip提取出来作为Ingram的输入
     - 去掉了若干与设备相关的超参数，新版本会自动探测设备
     - 不再内置iplist，因为其太占空间且不便于维护，需要的可以自己去网上找
+    - 解决了读取大文件内存爆炸的问题
 
 
 ## 免责声明

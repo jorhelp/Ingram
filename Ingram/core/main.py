@@ -4,7 +4,7 @@ import time
 from threading import Thread
 from collections import defaultdict
 
-from gevent import monkey; monkey.patch_all(thread=False)
+import gevent
 from gevent.pool import Pool as geventPool
 
 from Ingram.utils import config
@@ -22,6 +22,7 @@ def consumer(core):
     try:
         while not core.finish:
             core.workshop.process()
+            time.sleep(.1)
     except KeyboardInterrupt as e:
         # os._exit(0)  # 这种退出方式常用在子进程中
         exit(0)
@@ -32,15 +33,18 @@ def consumer(core):
 
 def status(core):
     bar = status_bar()
+    tmp = 0
     try:
         while True:
-            time_interval = get_current_time() - core.create_time
+            if tmp % 15 == 0:  # every ~1s cal the time
+                time_interval = get_current_time() - core.create_time
             total = core.data.get_total()
             done = core.data.get_done()
             found = core.data.get_found()
             product = core.workshop.get_done()
             bar(total, done, found, product, time_interval)
             time.sleep(.05)
+            tmp = tmp + 1 if tmp < 100 else 0
     except KeyboardInterrupt as e:
         exit(0)
     except Exception as e:
@@ -52,32 +56,39 @@ def status(core):
 class Core:
 
     def __init__(self):
-        self.data = Data(config['IN'], config['OUT'])
-        self.workshop = Workshop(os.path.join(config['OUT'], 'snapshots'), config['TH'] // 4)
-        self.scan = Scan(self.data, self.workshop, config['PORT'])
+        self.finish = False
+        self.create_time = get_current_time()
+        self.data = Data(config.IN, config.OUT)
+        self.workshop = Workshop(os.path.join(config.OUT, 'snapshots'), config.TH // 4)
+        self.scan = Scan(self.data, self.workshop, config.PORT)
+        self.scan_pool = geventPool(config.TH)
+
         self.status = Thread(target=status, args=(self, ))
         self.consumer = Thread(target=consumer, args=(self, ))
-        self.create_time = get_current_time()
-        self.finish = False
+        self.get_data_from_disk = Thread(target=self.data.get_data_from_disk)
 
-        # logger config vars
-        logger.info(config.config_dict.items())
+    def test(self, ip):
+        gc.collect()
 
     def __call__(self):
         try:
+            # logger config vars
+            logger.info(config.__dict__)
+
             self.status.setDaemon(True)
             self.status.start()
+            self.get_data_from_disk.start()
             self.consumer.start()
-
-            # gevent pool
-            self.scan_pool = geventPool(config['TH'])
-            self.scan_pool.map_async(self.scan, self.data.ip_generator).get()
+            for ip in self.data.ip_generator:
+                self.scan_pool.start(gevent.spawn(self.scan, ip))
+            self.scan_pool.join()
 
             time.sleep(.1)  # the last item may not print
             self.finish = True  # terminate the status thread
 
             self.report()
             self.consumer.join()
+            self.get_data_from_disk.join()
 
         except KeyboardInterrupt as e:
             self.finish = True
@@ -96,7 +107,7 @@ class Core:
 
     def report(self):
         """report the results"""
-        results_file = os.path.join(config['OUT'], 'results.csv')
+        results_file = os.path.join(config.OUT, 'results.csv')
         if os.path.exists(results_file):
             with open(results_file, 'r') as f:
                 items = [l.strip().split(',') for l in f if l.strip()]

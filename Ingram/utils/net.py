@@ -3,24 +3,6 @@ import random
 import requests
 from xml import etree
 
-import IPy
-
-
-def get_ip_segment(start: str, end: str) -> str:
-    return IPy.IP(f"{start}-{end}", make_net=True).strNormal()
-
-
-def get_ip_seg_len(ip_seg: str) -> int:
-    return IPy.IP(ip_seg, make_net=True).len() if '-' in ip_seg or '/' in ip_seg else 1
-
-
-def get_all_ip(ip_seg: str) -> list:
-    if ip_seg.count(':') == 1:
-        yield ip_seg
-    else:
-        for i in IPy.IP(ip_seg, make_net=True):
-            yield i.strNormal()
-
 
 def scrapy_useragent() -> None:
     base_url = 'https://useragentstring.com/pages/'

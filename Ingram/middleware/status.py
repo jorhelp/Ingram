@@ -25,7 +25,7 @@ def status_bar():
         # count
         _total = color.blue(total, 'bright')
         _done = color.blue(done, 'bright')
-        _percent = color.yellow(f"{round(done / total * 100, 1)}%", 'bright')
+        _percent = color.yellow(f"{round(done / (total + 0.001) * 100, 1)}%", 'bright')
         _found = 'Found ' + color.red(found, 'bright') if found else ''
         _product = 'Snapshot ' + color.red(product, 'bright') if product else ''
         count = f"{_done}/{_total}({_percent}) {_found} {_product}"

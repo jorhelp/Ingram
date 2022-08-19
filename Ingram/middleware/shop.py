@@ -10,14 +10,16 @@ from Ingram.utils import logger
 from Ingram.utils import get_user_agent
 
 
+MAXTRY = config.MAXTRY
+TIMEOUT = config.TIMEOUT
+HEADERS = {'User-Agent': config.USERAGENT, }
+
+
 def _snapshot_by_url(url, file_name, workshop, auth=None):
-    maxtry = config['MAXTRY']
-    timeout = config['TIMEOUT'] * 2
-    for _ in range(maxtry):
+    for _ in range(MAXTRY):
         try:
-            headers = {'User-Agent': get_user_agent(), }
-            if auth: r = requests.get(url, auth=auth, timeout=timeout, verify=False, headers=headers)
-            else: r = requests.get(url, timeout=timeout, verify=False, headers=headers)
+            if auth: r = requests.get(url, auth=auth, timeout=TIMEOUT, verify=False, headers=HEADERS)
+            else: r = requests.get(url, timeout=TIMEOUT, verify=False, headers=HEADERS)
             if r.status_code == 200:
                 with open(file_name, 'wb') as f: f.write(r.content)
                 workshop.done_add()
@@ -72,3 +74,5 @@ def snapshot(camera_info, workshop):
         elif device == 'dlink':
             url = f"http://{ip}:{port}/dms?nowprofileid=1"
             snapshot_by_url(url, file_name, auth=(user, passwd))
+
+    del camera_info
