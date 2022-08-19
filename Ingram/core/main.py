@@ -67,9 +67,6 @@ class Core:
         self.consumer = Thread(target=consumer, args=(self, ))
         self.get_data_from_disk = Thread(target=self.data.get_data_from_disk)
 
-    def test(self, ip):
-        gc.collect()
-
     def __call__(self):
         try:
             # logger config vars
