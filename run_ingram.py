@@ -27,8 +27,9 @@ def assemble_config(args):
     config.TH = args.th_num
     config.DEBUG = args.debug
     config.TIMEOUT = args.time_out
-    config.PORT = args.port
     config.LOGFILE = os.path.join(config.OUT, 'log.txt')  # log file
+    if args.port:
+        config.PORT = args.port
 
     if not os.path.isfile(config.IN):
         print(f"{color.red('the input file')} {color.yellow(config.IN)} {color.red('does not exists!')}")

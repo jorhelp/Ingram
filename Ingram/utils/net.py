@@ -1,7 +1,26 @@
 """Network Tools"""
+import IPy
 import random
 import requests
 from xml import etree
+
+
+def get_ip_segment(start: str, end: str) -> str:
+    return IPy.IP(f"{start}-{end}", make_net=True).strNormal()
+
+
+def get_ip_seg_len(ip_seg: str) -> int:
+    if '-' in ip_seg or '/' in ip_seg:
+        return IPy.IP(ip_seg, make_net=True).len()
+    else:
+        return 1
+
+
+def get_all_ip(ip_seg: str) -> list:
+    if '-' in ip_seg or '/' in ip_seg:
+        return [i.strNormal() for i in IPy.IP(ip_seg, make_net=True)]
+    else:
+        return [ip_seg]
 
 
 def scrapy_useragent() -> None:

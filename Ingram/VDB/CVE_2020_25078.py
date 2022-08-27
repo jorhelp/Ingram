@@ -1,4 +1,4 @@
-"""dlink passwd disclosure"""
+"""dlink DCS-series passwd disclosure"""
 import requests
 
 from Ingram.utils import config

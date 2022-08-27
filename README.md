@@ -65,7 +65,7 @@ python run_ingram.py -i 你要扫描的文件 -o 输出文件夹
 + 端口：
 如果target.txt文件中指定了目标的端口，比如: 192.168.6.6:8000，那么会扫描该目标的8000端口 
 
-否则的话，默认只扫描80端口，若要批量扫描其他端口，需指定，例如：
+否则的话，默认只扫描常见端口，若要批量扫描其他端口，需自行指定，例如：
 ```bash
 python run_ingram.py -i 你要扫描的文件 -o 输出文件夹 -p 80 81 8000
 ```
@@ -84,7 +84,7 @@ optional arguments:
   -o OUT_DIR, --out_dir OUT_DIR
                         扫描结果输出路径
   -p PORT [PORT ...], --port PORT [PORT ...]
-                        要扫描的端口，默认为80，可以指定多个端口，比如 -p 80 81 82
+                        要扫描的端口，可以指定多个端口，比如 -p 80 81 82
   -t TH_NUM, --th_num TH_NUM
                         并发数目，视网络状况自行调整
   -T TIME_OUT, --time_out TIME_OUT

@@ -10,6 +10,7 @@ from Ingram.utils import color
 from Ingram.utils import logger
 from Ingram.utils import singleton
 from Ingram.utils import get_current_time
+from Ingram.utils import get_all_ip, get_ip_seg_len
 
 
 @singleton
@@ -36,60 +37,47 @@ class Data:
         with open(self.input, 'r') as f:
             for line in f:
                 if (not line.startswith('#')) and line.rstrip():
-                    if '-' in line or '/' in line:
-                        self.total += IPy.IP(line.rstrip(), make_net=True).len()
-                    else: self.total += 1
+                    self.total += get_ip_seg_len(line.rstrip())
 
     def preprocess(self):
         # done
-        with open(os.path.join(self.output, 'log.txt'), 'r') as f:
-            loglines = f.readlines()
-            for line in loglines[::-1]:
-                if line.strip().endswith('running state'):
-                    # check the taskid
-                    items = line.split('#@#')
-                    if items[-3] == self.taskid:
-                        self.done = int(items[-2])
-                        break
-            del loglines
-
-        
-        # the location to begin
-        if self.done != 0:
-            for _ in range(self.done):
-                next(self.ip_generator)
-            #  current = 0
-            #  while self.lines:
-            #      line = self.lines.pop(0)
-            #      current += get_ip_seg_len(line)
-            #      if current == self.done:
-            #          break
-            #      elif current < self.done:
-            #          continue
-            #      else:
-            #          ips = get_all_ip(line)
-            #          self.lines = ips[-(current - self.done):] + self.lines
-            #          break
-            #  logger.debug(f"current: {current}, done: {self.done}, total: {self.total}")
+        state_file = os.path.join(self.output, f'.{self.taskid}')
+        if os.path.exists(state_file):
+            with open(state_file, 'r') as f:
+                self.done = int(f.readline().strip())
 
         # found
         results_file = os.path.join(self.output, 'results.csv')
         if os.path.exists(results_file):
             with open(results_file, 'r') as f:
-                self.found = len([l for l in f if l.strip()])
+                self.found = len([l for l in f if l.rstrip()])
 
         self.vul = open(results_file, 'a')
         self.not_vul = open(os.path.join(self.output, 'not_vulnerable.csv'), 'a')
 
     def ip_generate(self):
+        current, remain = 0, []
         with open(self.input, 'r') as f:
+            if self.done:
+                for line in f:
+                    if (not line.startswith('#')) and line.rstrip():
+                        current += get_ip_seg_len(line.rstrip())
+                        if current == self.done:
+                            break
+                        elif current < self.done:
+                            continue
+                        else:
+                            ips = get_all_ip(line.rstrip())
+                            remain = ips[(self.done - current): ]
+                            break
+
+                for ip in remain:
+                    yield ip
+
             for line in f:
                 if (not line.startswith('#')) and line.rstrip():
-                    if ':' in line:  # ip:port
-                        yield line.rstrip()
-                    else:
-                        for ip in IPy.IP(line.rstrip(), make_net=True):
-                            yield ip.strNormal()
+                    for ip in get_all_ip(line.rstrip()):
+                        yield ip
 
     def get_total(self):
         with self.var_lock:
@@ -122,14 +110,12 @@ class Data:
             self.not_vul.flush()
 
     def record_running_state(self):
-        # every 5 minutes
-        with self.var_lock:
-            time_interval = int(get_current_time() - self.create_time)
-            if time_interval % (5 * 60) == 0:
-                logger.info(f"#@#{self.taskid}#@#{self.done}#@#running state")
+        with open(os.path.join(self.output, f".{self.taskid}"), 'w') as f:
+            f.write(str(self.done))
 
     def __del__(self):
         try:  # if dont use try, sys.exit() may cause error
+            self.record_running_state()
             self.vul.close()
             self.not_vul.close()
         except Exception as e:

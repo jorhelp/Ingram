@@ -36,8 +36,9 @@ def status(core):
     tmp = 0
     try:
         while True:
-            if tmp % 15 == 0:  # every ~1s cal the time
+            if tmp % 15 == 0:  # every ~1s
                 time_interval = get_current_time() - core.create_time
+                core.data.record_running_state()
             total = core.data.get_total()
             done = core.data.get_done()
             found = core.data.get_found()
@@ -82,6 +83,7 @@ class Core:
 
             time.sleep(.1)  # the last item may not print
             self.finish = True  # terminate the status thread
+            self.data.record_running_state()
 
             self.report()
             self.consumer.join()
@@ -109,22 +111,23 @@ class Core:
             with open(results_file, 'r') as f:
                 items = [l.strip().split(',') for l in f if l.strip()]
 
-            results = defaultdict(lambda: defaultdict(lambda: 0))
-            for i in items:
-                dev, vul = i[2].split('-')[0], i[-1]
-                results[dev][vul] += 1
-            results_sum = len(items)
-            results_max = max([val for vul in results.values() for val in vul.values()])
-            
-            print('\n')
-            print('-' * 19, 'REPORT', '-' * 19)
-            for dev in results:
-                vuls = [(vul_name, vul_count) for vul_name, vul_count in results[dev].items()]
-                dev_sum = sum([i[1] for i in vuls])
-                print(color.red(f"{dev} {dev_sum}", 'bright'))
-                for vul_name, vul_count in vuls:
-                    block_num = int(vul_count / results_max * 25)
-                    print(color.green(f"{vul_name:>18} | {'▥' * block_num} {vul_count}"))
-            print(color.yellow(f"{'sum: ' + str(results_sum):>46}", 'bright'), flush=True)
-            print('-' * 46)
-            print('\n')
+            if items:
+                results = defaultdict(lambda: defaultdict(lambda: 0))
+                for i in items:
+                    dev, vul = i[2].split('-')[0], i[-1]
+                    results[dev][vul] += 1
+                results_sum = len(items)
+                results_max = max([val for vul in results.values() for val in vul.values()])
+                
+                print('\n')
+                print('-' * 19, 'REPORT', '-' * 19)
+                for dev in results:
+                    vuls = [(vul_name, vul_count) for vul_name, vul_count in results[dev].items()]
+                    dev_sum = sum([i[1] for i in vuls])
+                    print(color.red(f"{dev} {dev_sum}", 'bright'))
+                    for vul_name, vul_count in vuls:
+                        block_num = int(vul_count / results_max * 25)
+                        print(color.green(f"{vul_name:>18} | {'▥' * block_num} {vul_count}"))
+                print(color.yellow(f"{'sum: ' + str(results_sum):>46}", 'bright'), flush=True)
+                print('-' * 46)
+                print('\n')
