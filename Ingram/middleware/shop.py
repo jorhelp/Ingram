@@ -10,22 +10,19 @@ from Ingram.utils import logger
 from Ingram.utils import get_user_agent
 
 
-MAXTRY = config.MAXTRY
 TIMEOUT = config.TIMEOUT
 HEADERS = {'User-Agent': config.USERAGENT, }
 
 
 def _snapshot_by_url(url, file_name, workshop, auth=None):
-    for _ in range(MAXTRY):
-        try:
-            if auth: r = requests.get(url, auth=auth, timeout=TIMEOUT, verify=False, headers=HEADERS)
-            else: r = requests.get(url, timeout=TIMEOUT, verify=False, headers=HEADERS)
-            if r.status_code == 200:
-                with open(file_name, 'wb') as f: f.write(r.content)
-                workshop.done_add()
-                break
-        except Exception as e:
-            logger.error(e)
+    try:
+        if auth: r = requests.get(url, auth=auth, timeout=TIMEOUT, verify=False, headers=HEADERS)
+        else: r = requests.get(url, timeout=TIMEOUT, verify=False, headers=HEADERS)
+        if r.status_code == 200:
+            with open(file_name, 'wb') as f: f.write(r.content)
+            workshop.done_add()
+    except Exception as e:
+        logger.error(e)
 
 
 def snapshot(camera_info, workshop):
