@@ -1,7 +1,6 @@
 """utils subpackage"""
 from Ingram.utils.base import *
 from Ingram.utils.time import *
-from Ingram.utils.logo import logo
 from Ingram.utils.color import color
 from Ingram.utils.config import config
 from Ingram.utils.wechat import wx_send

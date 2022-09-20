@@ -8,7 +8,6 @@ from gevent import monkey; monkey.patch_all(thread=False)
 import os
 
 from Ingram.utils import config
-from Ingram.utils import logo
 from Ingram.utils import color
 from Ingram.utils import wx_send
 from Ingram.utils import get_parse
@@ -47,9 +46,6 @@ def assemble_config(args):
 
 if __name__ == '__main__':
     try:
-        # logo
-        for icon, font in zip(*logo):
-            print(f"{color.yellow(icon, 'bright')}  {color.magenta(font, 'bright')}")
         assemble_config(get_parse())  # assemble global config vars
         core = Core()  # get ingram core
         core()  # run
