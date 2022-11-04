@@ -29,14 +29,14 @@ Mainly for the vulnerability scanning framework of network cameras, it has integ
 + clone the repository:
 ```bash
 git clone https://github.com/jorhelp/Ingram.git
-``
+```
 
 + Enter the project directory to install dependencies:
 ```bash
 cd Ingram
 pip3 install git+https://github.com/arthaud/python3-pwntools.git
 pip3 install -r requirements.txt
-``
+```
 
 So far the installation is complete!
 
@@ -44,7 +44,7 @@ So far the installation is complete!
 ## run
 
 + You need to prepare a target file, such as target.txt, which stores the IP addresses you want to scan, one target per line, the specific format is as follows:
-``
+```
 # You can use the pound sign (#) to comment
 # single IP address
 192.168.0.1
@@ -54,12 +54,12 @@ So far the installation is complete!
 192.168.0.0/16
 # IP segment with '-'
 192.168.0.0-192.168.255.255
-``
+```
 
 + run after:
 ```bash
 python run_ingram.py -i files you want to scan -o output folder
-``
+```
 
 + port:
 If the target port is specified in the target.txt file, for example: 192.168.6.6:8000, then the target port 8000 will be scanned
@@ -67,15 +67,15 @@ If the target port is specified in the target.txt file, for example: 192.168.6.6
 Otherwise, only common ports are scanned by default. If you want to scan other ports in batches, you need to specify them yourself, for example:
 ```bash
 python run_ingram.py -i files you want to scan -o output folder -p 80 81 8000
-``
+```
 
 + The default number of concurrency may be so easy for your broadband, you can increase it appropriately according to the network conditions, for example, increasing the number of concurrency to 800 on my test machine still works well, and the speed is extremely fast:
 ```bash
 python run_ingram.py -i files you want to scan -o output folder -t 800
-``
+```
 
 + other parameters:
-``
+```
 optional arguments:
   -h, --help print parameter information
   -i IN_FILE, --in_file IN_FILE
@@ -89,14 +89,14 @@ optional arguments:
   -T TIME_OUT, --time_out TIME_OUT
                         time out
   --debug debug mode
-``
+```
 
 + (**Optional**) The scan time may be very long, if you want to send a reminder via WeChat when the program scan is over, you need to follow [wxpusher](https://wxpusher.zjiecode.com/docs /) to get your own *UID* and *APP_TOKEN* and write them into `run_ingram.py`:
 ```python
 #wechat
 config.set_val('WXUID', 'write uid here')
 config.set_val('WXTOKEN', 'write token here')
-``
+```
 
 + Support interruption recovery, but because the running status is recorded every 5 minutes, it cannot accurately restore to the last running status. (It's rough here, it will be adjusted in the next version)
 
@@ -109,7 +109,7 @@ config.set_val('WXTOKEN', 'write token here')
 ├── results.csv
 ├── snapshots
 └── log.txt
-``
+```
 
 + `results.csv` saves the complete results in the format: `ip,port,devicetype,username,password,vulnerability entry`:  
 
