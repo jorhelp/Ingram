@@ -28,7 +28,7 @@ Mainly for the vulnerability scanning framework of network cameras, it has integ
 
 + clone the repository:
 ```bash
-git clone https://github.com/jorhelp/Ingram.git
+git clone https://github.com/avikowy/Ingram.git
 ```
 
 + Enter the project directory to install dependencies:
