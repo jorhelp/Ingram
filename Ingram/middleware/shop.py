@@ -16,17 +16,6 @@ HEADERS = {'Connection': 'close', 'User-Agent': config.USERAGENT }
 
 def _snapshot_by_url(url, file_name, workshop, auth=None):
     try:
-        if auth:
-            r = requests.get(url, auth=auth, timeout=TIMEOUT, verify=False, headers=HEADERS)
-            if r.status_code == 200:
-                with open(file_name, 'wb') as f: f.write(r.content)
-                workshop.done_add()
-        else:
-            r = requests.get(url, timeout=TIMEOUT, verify=False, headers=HEADERS)
-            if r.status_code == 200:
-                with open(file_name, 'wb') as f: f.write(r.content)
-                workshop.done_add()
-
         if auth: r = requests.get(url, auth=auth, timeout=TIMEOUT, verify=False, headers=HEADERS)
         else: r = requests.get(url, timeout=TIMEOUT, verify=False, headers=HEADERS)
         if r.status_code == 200:
