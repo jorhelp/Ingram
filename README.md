@@ -13,7 +13,7 @@
     <img alt="Languages Count" src="https://img.shields.io/github/languages/count/jorhelp/Ingram?style=social">
 </div>
 
-简体中文 | [English](https://github.com/jorhelp/blob/master/README.en.md)
+简体中文 | [English](https://github.com/jorhelp/Ingram/blob/master/README.en.md)
 
 ## 简介
 
