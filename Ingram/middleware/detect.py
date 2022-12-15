@@ -38,13 +38,12 @@ def device_detect(ip: str, port: str) -> str:
     # these are need to be hashed
     for url in url_list[:3]:
         try:
-            #  r = requests.get(url, timeout=TIMEOUT, verify=False, headers=HEADERS)
-            with closing(requests.get(url, timeout=TIMEOUT, verify=False, headers=HEADERS)) as r:
-                if r.status_code == 200:
-                    hash_val = hashlib.md5(r.content).hexdigest()
-                    if hash_val in DEV_HASH:
-                        device = DEV_HASH[hash_val]
-                        return device
+            r = requests.get(url, timeout=TIMEOUT, verify=False, headers=HEADERS)
+            if r.status_code == 200:
+                hash_val = hashlib.md5(r.content).hexdigest()
+                if hash_val in DEV_HASH:
+                    device = DEV_HASH[hash_val]
+                    return device
         except Exception as e:
             logger.error(e)
     # not hash
