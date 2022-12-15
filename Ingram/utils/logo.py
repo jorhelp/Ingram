@@ -326,7 +326,11 @@ def generate_logo() -> list:
         font = random.choice(ingram_fonts).split('\n')
         font_width = max([len(i) for i in font])
         font_height = len(font)
-        if font_width + icon_width + 2 < os.get_terminal_size()[0]:
+        try:
+            if font_width + icon_width + 2 < os.get_terminal_size()[0]:
+                found = True
+                break
+        except:
             found = True
             break
     if not found:
