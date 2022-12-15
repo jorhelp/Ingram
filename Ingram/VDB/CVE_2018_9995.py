@@ -7,6 +7,7 @@ from Ingram.utils import logger
 
 def cve_2018_9995(ip: str) -> list:
     headers = {
+        'Connection': 'close',
         'User-Agent': config.USERAGENT,
         'Cookie': 'uid=admin',
     }

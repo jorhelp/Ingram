@@ -8,7 +8,7 @@ from Ingram.utils import logger
 
 
 def cve_2017_14514(ip: str) -> list:
-    headers = {'User-Agent': config.USERAGENT}
+    headers = {'Connection': 'close', 'User-Agent': config.USERAGENT}
     url = f"http://{ip}/cgi-bin/DownloadCfg/RouterCfm.cfg"
 
     try:

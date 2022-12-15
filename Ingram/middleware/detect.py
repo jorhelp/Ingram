@@ -20,7 +20,7 @@ DEV_HASH = {
     '1536f25632f78fb03babedcb156d3f69': config.UNIVIEW_NVR,
     'c30a692ad0d1324389485de06c96d9b8': 'uniview-dev',  # bugs
 }
-HEADERS = {'User-Agent': config.USERAGENT}
+HEADERS = {'Connection': 'close', 'User-Agent': config.USERAGENT}
 TIMEOUT = config.TIMEOUT
 
 

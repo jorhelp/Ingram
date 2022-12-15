@@ -13,7 +13,7 @@ USERAGENT = config.USERAGENT
 
 def hikvision_weak(ip: str) -> list:
     url = f"http://{ip}/ISAPI/Security/userCheck"
-    headers = {'User-Agent': USERAGENT}
+    headers = {'Connection': 'close', 'User-Agent': USERAGENT}
     timeout = TIMEOUT
     for user in USERS:
         for passwd in PASSWDS:
@@ -65,7 +65,7 @@ def dahua_weak(ip: str) -> list:
 
 
 def cctv_weak(ip: str) -> list:
-    headers = {'User-Agent': USERAGENT}
+    headers = {'Connection': 'close', 'User-Agent': USERAGENT}
     for user in USERS:
         for passwd in PASSWDS:
             url = f'http://{ip}/cgi-bin/gw.cgi?xml=<juan ver="" squ="" dir="0"><rpermission usr="{user}" pwd="{passwd}"><config base=""/><playback base=""/></rpermission></juan>'
@@ -83,12 +83,12 @@ def cctv_weak(ip: str) -> list:
 
 # still bugs...
 def uniview_weak(ip: str) -> list:
-    headers = {'User-Agent': USERAGENT}
+    headers = {'Connection': 'close', 'User-Agent': USERAGENT}
 
 
 # still bugs...
 def dlink_weak(ip: str) -> list:
-    headers = {'User-Agent': USERAGENT}
+    headers = {'Connection': 'close', 'User-Agent': USERAGENT}
     for user in USERS:
         for p in PASSWDS:
             r = requests.get(f"http://{ip}", verify=False, headers=headers, timeout=TIMEOUT, auth=(user, p))

@@ -28,4 +28,4 @@ def get_vul(dev: str) -> list:
     elif dev == config.DVR:
         return [cve_2018_9995, ]
     else:
-        return None
+        return []

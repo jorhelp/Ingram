@@ -13,10 +13,11 @@
     <img alt="Languages Count" src="https://img.shields.io/github/languages/count/jorhelp/Ingram?style=social">
 </div>
 
+简体中文 | [English](https://github.com/jorhelp/Ingram/blob/master/README.en.md)
 
 ## 简介
 
-主要针对网络摄像头的漏洞扫描框架，目前已集成海康、大华、宇视等常见设备。后期会加入更多摄像头设备和路由器设备。  
+主要针对网络摄像头的漏洞扫描框架，目前已集成海康、大华、宇视、dlink等常见设备
 
 <div align=center>
     <img alt="run" src="https://github.com/jorhelp/imgs/blob/master/Ingram/run_time.gif">
@@ -32,10 +33,16 @@
 git clone https://github.com/jorhelp/Ingram.git
 ```
 
-+ 进入项目目录安装依赖:
++ 进入项目目录，创建一个虚拟环境，并激活该环境：
 ```bash
 cd Ingram
-pip3 install git+https://github.com/arthaud/python3-pwntools.git
+pip3 install virtualenv
+python3 -m virtualenv venv
+source venv/bin/activate
+```
+
++ 安装依赖:
+```bash
 pip3 install -r requirements.txt
 ```
 
@@ -43,6 +50,8 @@ pip3 install -r requirements.txt
 
 
 ## 运行
+
++ 由于是在虚拟环境中配置，所以，每次运行之前，请先激活虚拟环境：`source venv/bin/activate`
 
 + 你需要准备一个目标文件，比如 target.txt，里面保存着你要扫描的 IP 地址，每行一个目标，具体格式如下：
 ```
@@ -57,7 +66,7 @@ pip3 install -r requirements.txt
 192.168.0.0-192.168.255.255
 ```
 
-+ 之后运行:
++ 有了目标文件之后就可直接运行:
 ```bash
 python run_ingram.py -i 你要扫描的文件 -o 输出文件夹
 ```
@@ -92,6 +101,20 @@ optional arguments:
   --debug               调试模式
 ```
 
+
+## 端口扫描器
+
++ 我们可以利用强大的端口扫描器来获取活动主机，进而缩小 Ingram 的扫描范围，提高运行速度，具体做法是将端口扫描器的结果文件整理成 `ip:port` 的格式，并作为 Ingram 的输入
+
++ 这里以 masscan 为例简单演示一下（masscan 的详细用法这里不再赘述），首先用 masscan 扫描 80 或 8000-8008 端口存活的主机：`masscan -p80,8000-8008 -iL 目标文件 -oL 结果文件 --rate 8000`
+
++ masscan 运行完之后，将结果文件整理一下：`grep 'open' 结果文件 | awk '{printf"%s:%s\n", $4, $3} > targets'`
+
++ 之后对这些主机进行扫描：`python run_ingram.py -i targets -o out`
+
+
+## 微信提醒(可有可无)
+
 + (**可选**) 扫描时间可能会很长，如果你想让程序扫描结束的时候通过微信发送一条提醒的话，你需要按照 [wxpusher](https://wxpusher.zjiecode.com/docs/) 的指示来获取你的专属 *UID* 和 *APP_TOKEN*，并将其写入 `run_ingram.py`:
 ```python
 # wechat
@@ -99,7 +122,7 @@ config.set_val('WXUID', '这里写uid')
 config.set_val('WXTOKEN', '这里写token')
 ```
 
-+ 支持中断恢复，不过由于每5分钟记录一次运行状态，所以并不能准确恢复到上次的运行状态。(这里做的比较粗糙，下个版本调整)
++ 支持中断恢复，不过由于考虑到性能，并不会实时记录当前运行状态，而是间隔一定时间，所以并不能准确恢复到上次的运行状态。(这里做的比较粗糙，下个版本调整)
 
 
 ## 结果

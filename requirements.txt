@@ -9,3 +9,4 @@ pycryptodome>=3.9.7
 tzlocal>=2.1
 pyOpenSSL>=19.1.0
 pwn~=1.0
+pwntools>=4.3.1
