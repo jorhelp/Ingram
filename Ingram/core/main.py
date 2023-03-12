@@ -37,7 +37,7 @@ def status(core):
     try:
         while True:
             if tmp % 15 == 0:  # every ~1s
-                time_interval = get_current_time() - core.create_time
+                time_interval = get_current_time() - core.data.create_time + core.data.runned_time
                 core.data.record_running_state()
             total = core.data.get_total()
             done = core.data.get_done()
@@ -58,7 +58,6 @@ class Core:
 
     def __init__(self):
         self.finish = False
-        self.create_time = get_current_time()
         self.data = Data(config.IN, config.OUT)
         self.workshop = Workshop(os.path.join(config.OUT, 'snapshots'), config.TH // 4)
         self.scan = Scan(self.data, self.workshop, config.PORT)

@@ -41,7 +41,7 @@ class Scan:
                             self.workshop.put(msg)
                             self.data.found_add()
                             self.data.vul_add(','.join(msg[:6]) + '\n')
-                    if not vulnerable:
+                    if mods and not vulnerable:
                         record.append((port, device))
             
         except Exception as e:

@@ -22,6 +22,7 @@ class Data:
         self.var_lock = RLock()
         self.file_lock = RLock()
         self.create_time = get_current_time()
+        self.runned_time = 0
         self.taskid = hashlib.md5((self.input + self.output).encode('utf-8')).hexdigest()
 
         self.total = 0
@@ -43,8 +44,12 @@ class Data:
         # done
         state_file = os.path.join(self.output, f'.{self.taskid}')
         if os.path.exists(state_file):
-            with open(state_file, 'r') as f:
-                self.done = int(f.readline().strip())
+            try:
+                with open(state_file, 'r') as f:
+                    _done, _runned_time = f.readline().split(',')
+                    self.done = int(_done.strip())
+                    self.runned_time = float(_runned_time.strip())
+            except: pass
 
         # found
         results_file = os.path.join(self.output, 'results.csv')
@@ -80,24 +85,19 @@ class Data:
                         yield ip
 
     def get_total(self):
-        with self.var_lock:
-            return self.total
+        with self.var_lock: return self.total
 
     def get_done(self):
-        with self.var_lock:
-            return self.done
+        with self.var_lock: return self.done
 
     def get_found(self):
-        with self.var_lock:
-            return self.found
+        with self.var_lock: return self.found
 
     def found_add(self):
-        with self.var_lock:
-            self.found += 1
+        with self.var_lock: self.found += 1
 
     def done_add(self):
-        with self.var_lock:
-            self.done += 1
+        with self.var_lock: self.done += 1
 
     def vul_add(self, item):
         with self.file_lock:
@@ -111,7 +111,7 @@ class Data:
 
     def record_running_state(self):
         with open(os.path.join(self.output, f".{self.taskid}"), 'w') as f:
-            f.write(str(self.done))
+            f.write(f"{str(self.done)},{self.runned_time + get_current_time() - self.create_time}")
 
     def __del__(self):
         try:  # if dont use try, sys.exit() may cause error

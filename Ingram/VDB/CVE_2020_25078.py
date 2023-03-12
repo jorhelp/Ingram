@@ -6,7 +6,7 @@ from Ingram.utils import logger
 
 
 def cve_2020_25078(ip: str) -> list:
-    headers = {'User-Agent': config.USERAGENT}
+    headers = {'Connection': 'close', 'User-Agent': config.USERAGENT}
     url = f"http://{ip}/config/getuser?index=0"
 
     try:

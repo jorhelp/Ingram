@@ -2,8 +2,8 @@
 import os
 import requests
 from functools import partial
-from xml.etree import ElementTree
 from requests.auth import HTTPDigestAuth
+from xml.etree import ElementTree
 
 from Ingram.utils import config
 from Ingram.utils import logger
@@ -11,7 +11,7 @@ from Ingram.utils import get_user_agent
 
 
 TIMEOUT = config.TIMEOUT
-HEADERS = {'User-Agent': config.USERAGENT, }
+HEADERS = {'Connection': 'close', 'User-Agent': config.USERAGENT }
 
 
 def _snapshot_by_url(url, file_name, workshop, auth=None):
@@ -44,7 +44,10 @@ def snapshot(camera_info, workshop):
             # get channels
             channels = 1
             try:
-                r = requests.get(f"http://{ip}:{port}/ISAPI/Image/channels", auth=HTTPDigestAuth(user, passwd))
+                r = requests.get(f"http://{ip}:{port}/ISAPI/Image/channels",
+                                 auth=HTTPDigestAuth(user, passwd),
+                                 headers=HEADERS,
+                                 timeout=TIMEOUT)
                 root = ElementTree.fromstring(r.text)
                 channels = len(root)
             except Exception as e:
