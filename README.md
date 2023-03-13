@@ -15,29 +15,25 @@
 
 简体中文 | [English](https://github.com/jorhelp/Ingram/blob/master/README.en.md)
 
+## 简介
 
-## Introduction
-=======
+主要针对网络摄像头的漏洞扫描框架，目前已集成海康、大华、宇视、dlink等常见设备
 
-
-Mainly for the vulnerability scanning framework of network cameras, it has integrated common equipment such as Hikvision, Dahua, and Uniview. More camera devices and router devices will be added later.  
 <div align=center>
     <img alt="run" src="https://github.com/jorhelp/imgs/blob/master/Ingram/run_time.gif">
 </div>
 
 
-## Install
+## 安装
 
-**Windows still has some bugs, Linux and Mac can be used normally. Please make sure to install Python 3.7 and above, 3.8 is recommended**
+**Windows 仍有部分bug，Linux 与 Mac可以正常使用。请确保安装了3.7及以上版本的Python，推荐3.8**
 
-+ clone the repository:
++ 克隆该仓库:
 ```bash
-git clone https://github.com/avikowy/Ingram.git
+git clone https://github.com/jorhelp/Ingram.git
 ```
 
-
-+ Enter the project directory to install dependencies:
-
++ 进入项目目录，创建一个虚拟环境，并激活该环境：
 ```bash
 cd Ingram
 pip3 install virtualenv
@@ -50,66 +46,61 @@ source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
-So far the installation is complete!
+至此安装完毕！
 
 
-## run
+## 运行
 
++ 由于是在虚拟环境中配置，所以，每次运行之前，请先激活虚拟环境：`source venv/bin/activate`
 
-+ You need to prepare a target file, such as target.txt, which stores the IP addresses you want to scan, one target per line, the specific format is as follows:
-
++ 你需要准备一个目标文件，比如 target.txt，里面保存着你要扫描的 IP 地址，每行一个目标，具体格式如下：
 ```
-# You can use the pound sign (#) to comment
-# single IP address
+# 你可以使用井号(#)来进行注释
+# 单个的 IP 地址
 192.168.0.1
-# IP address and port to scan
+# IP 地址以及要扫描的端口
 192.168.0.2:80
-# IP segment with '/'
+# 带 '/' 的IP段
 192.168.0.0/16
-# IP segment with '-'
+# 带 '-' 的IP段
 192.168.0.0-192.168.255.255
 ```
 
-
-+ run after:
-
++ 有了目标文件之后就可直接运行:
 ```bash
-python run_ingram.py -i files you want to scan -o output folder
+python run_ingram.py -i 你要扫描的文件 -o 输出文件夹
 ```
 
-+ port:
-If the target port is specified in the target.txt file, for example: 192.168.6.6:8000, then the target port 8000 will be scanned
++ 端口：
+如果target.txt文件中指定了目标的端口，比如: 192.168.6.6:8000，那么会扫描该目标的8000端口 
 
-Otherwise, only common ports are scanned by default. If you want to scan other ports in batches, you need to specify them yourself, for example:
+否则的话，默认只扫描常见端口，若要批量扫描其他端口，需自行指定，例如：
 ```bash
-python run_ingram.py -i files you want to scan -o output folder -p 80 81 8000
+python run_ingram.py -i 你要扫描的文件 -o 输出文件夹 -p 80 81 8000
 ```
 
-+ The default number of concurrency may be so easy for your broadband, you can increase it appropriately according to the network conditions, for example, increasing the number of concurrency to 800 on my test machine still works well, and the speed is extremely fast:
++ 默认的并发数目可能对你的宽带来说 so easy 了， 你可以根据网络情况适当增大，比如在我测试机上将并发数目加到800依然运行良好，而且速度极快:
 ```bash
-python run_ingram.py -i files you want to scan -o output folder -t 800
+python run_ingram.py -i 你要扫描的文件 -o 输出文件夹 -t 800
 ```
 
-+ other parameters:
++ 其他参数：
 ```
 optional arguments:
-  -h, --help print parameter information
+  -h, --help            打印参数信息
   -i IN_FILE, --in_file IN_FILE
-                        file to scan
+                        要扫描的文件
   -o OUT_DIR, --out_dir OUT_DIR
-                        Scan result output path
+                        扫描结果输出路径
   -p PORT [PORT ...], --port PORT [PORT ...]
-                        The port to scan, you can specify multiple ports, such as -p 80 81 82
+                        要扫描的端口，可以指定多个端口，比如 -p 80 81 82
   -t TH_NUM, --th_num TH_NUM
-                        The number of concurrent, adjusted according to the network conditions
+                        并发数目，视网络状况自行调整
   -T TIME_OUT, --time_out TIME_OUT
-                        time out
-  --debug debug mode
+                        超时
+  --debug               调试模式
 ```
 
-
-+ (**Optional**) The scan time may be very long, if you want to send a reminder via WeChat when the program scan is over, you need to follow [wxpusher](https://wxpusher.zjiecode.com/docs /) to get your own *UID* and *APP_TOKEN* and write them into `run_ingram.py`:
-=======
 
 ## 端口扫描器
 
@@ -125,18 +116,16 @@ optional arguments:
 ## 微信提醒(可有可无)
 
 + (**可选**) 扫描时间可能会很长，如果你想让程序扫描结束的时候通过微信发送一条提醒的话，你需要按照 [wxpusher](https://wxpusher.zjiecode.com/docs/) 的指示来获取你的专属 *UID* 和 *APP_TOKEN*，并将其写入 `run_ingram.py`:
-
 ```python
-#wechat
-config.set_val('WXUID', 'write uid here')
-config.set_val('WXTOKEN', 'write token here')
+# wechat
+config.set_val('WXUID', '这里写uid')
+config.set_val('WXTOKEN', '这里写token')
 ```
 
-+ Support interruption recovery, but because the running status is recorded every 5 minutes, it cannot accurately restore to the last running status. (It's rough here, it will be adjusted in the next version)
++ 支持中断恢复，不过由于考虑到性能，并不会实时记录当前运行状态，而是间隔一定时间，所以并不能准确恢复到上次的运行状态。(这里做的比较粗糙，下个版本调整)
 
 
-
-## result
+## 结果
 
 ```bash
 .
@@ -146,59 +135,59 @@ config.set_val('WXTOKEN', 'write token here')
 └── log.txt
 ```
 
-+ `results.csv` saves the complete results in the format: `ip,port,devicetype,username,password,vulnerability entry`:  
++ `results.csv` 里保存了完整的结果, 格式为: `ip,端口,设备类型,用户名,密码,漏洞条目`:  
 
 <div align=center>
     <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/results.png">
 </div>
 
-+ `not_vulnerable.csv` stores unexposed devices
++ `not_vulnerable.csv` 中保存的是没有暴露的设备
 
-+ `snapshots` stores snapshots of some devices:  
++ `snapshots` 中保存了部分设备的快照:  
 
 <div align=center>
     <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/snapshots.png">
 </div>
 
 
-## ~~Live Preview~~ (removed for some reasons)
+## ~~实时预览~~ (由于部分原因已移除)
 
-+ ~~You can log in directly through the browser to preview~~
++ ~~可以直接通过浏览器登录来预览~~
   
-+ ~~If you want to view batches, we provide a script `show/show_rtsp/show_all.py`, but it still has some problems :~~
++ ~~如果想批量查看，我们提供了一个脚本 `show/show_rtsp/show_all.py`，不过它还有一些问题:~~
 
 <div align=center>
     <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/show_rtsp.png">
 </div>
 
 
-## Changelog
+## 更新日志
 
-+ [2022-06-11] **Optimize running speed, support storage of non-exposed devices, support interrupt recovery**
++ [2022-06-11] **优化运行速度，支持存储非暴露设备，支持中断恢复**
 
-+ [2022-07-23] **Username and password can be obtained through CVE-2021-33044(Dahua)! Modify the camera snapshot logic (replace rtsp with http), optimize the running speed**
-    - **Because the new version has added some dependency packages, the environment needs to be reconfigured!!!**
++ [2022-07-23] **可以通过 CVE-2021-33044(Dahua) 来获取用户名与密码了！修改了摄像头快照逻辑(将rtsp替换为了http)，优化了运行速度**
+    - **由于新版本加入了一些依赖包，需要重新配置环境!!!**
 
-+ [2022-08-05] **Added CVE-2021-33045 (Dahua NVR), but because the account password of the NVR device may not be the same as that of the real camera, the snapshot function does not always work**
++ [2022-08-05] **增加了 CVE-2021-33045(Dahua NVR)，不过由于NVR设备的账号密码与真正的摄像头的账号密码可能不一致，所以快照功能并不总是有效**
 
-+ [2022-08-06] **Added a password exposure module for Uniview devices, but snapshots are not currently supported**
++ [2022-08-06] **增加了 宇视 设备的密码暴露模块，暂不支持快照**
 
-+ [2022-08-17] **A relatively large update, we refactored all the code (need to reconfigure the environment), as follows:**
-    - Refactored the code structure to facilitate the integration of more vulnerabilities in the future, removed some dependent packages, and reduced hyperparameters
-    - Replaced multi-threading with coroutines, the speed is significantly improved than before
-    - Solved the bug that the child process could not be closed automatically
-    - Removed support for masscan, because the new version will automatically detect the port, of course, you can also extract the result ip of masscan as the input of Ingram
-    - Removed several device-related hyperparameters, the new version will automatically detect the device
-    - No built-in iplist, because it takes up too much space and is inconvenient to maintain, you can find it online yourself if you need it
-    - Solved the problem of memory explosion when reading large files
-
-
-## Disclaimer
-
-This tool is for security testing only, and is strictly prohibited for illegal use, and the consequences have nothing to do with the team
++ [2022-08-17] **比较大的一次更新，我们重构了所有代码 (需要重新配置环境)，具体如下：**
+    - 重构了代码结构，便于以后集成更多漏洞，移除部分依赖包，减少了超参数
+    - 将多线程替换为协程，速度较之前有明显提升
+    - 解决了子进程无法自动关闭的bug
+    - 去掉了对masscan的支持，因为新版本会自动探测端口，当然你还可以把masscan的结果ip提取出来作为Ingram的输入
+    - 去掉了若干与设备相关的超参数，新版本会自动探测设备
+    - 不再内置iplist，因为其太占空间且不便于维护，需要的可以自己去网上找
+    - 解决了读取大文件内存爆炸的问题
 
 
-## Acknowledgments & Quotes
+## 免责声明
+
+本工具仅供安全测试，严禁用于非法用途，后果与本团队无关
+
+
+## 鸣谢 & 引用
 
 Thanks to [Aiminsun](https://github.com/Aiminsun/CVE-2021-36260) for CVE-2021-36260  
 Thanks to [chrisjd20](https://github.com/chrisjd20/hikvision_CVE-2017-7921_auth_bypass_config_decryptor) for hidvision config file decryptor  
