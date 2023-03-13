@@ -16,7 +16,7 @@ def get_vul(dev: str) -> list:
     if dev == config.HIKVISION:
         return [hikvision_weak, cve_2021_36260, cve_2017_7921]
     elif dev == config.DAHUA:
-        return [dahua_weak, cve_2021_33044, cve_2021_33045]
+        return [dahua_disabled, dahua_weak, cve_2021_33044, cve_2021_33045]
     elif dev == config.UNIVIEW_NVR:
         return [disclosure, ]
     elif dev == config.DLINK_DCS:
