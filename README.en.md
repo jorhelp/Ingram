@@ -113,7 +113,7 @@ optional arguments:
 
 + First, use masscan to scan the surviving host on port 80 or 8000-8008 (you sure can change the port anything else if you want): `masscan -p80,8000-8008 -iL INPUT -oL OUTPUT --rate 8000`
 
-+ After masscan is done, sort out the result file: `grep 'open' OUTPUT | awk '{printf"%s:%s\n", $4, $3} > input'`
++ After masscan is done, sort out the result file: `grep 'open' OUTPUT | awk '{printf"%s:%s\n", $4, $3}' > input`
 
 + Then: `python run_ingram.py -i input -o output`
 
