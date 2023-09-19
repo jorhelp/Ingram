@@ -6,8 +6,8 @@
 #====================================================================
 from colorama import init, Fore, Style
 
-from Ingram.utils.base import os_check
-from Ingram.utils.base import singleton
+from .common import os_check
+from .common import singleton
 
 
 # wrap must be True when the os is windows

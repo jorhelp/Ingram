@@ -1,0 +1,32 @@
+cctv,/,body=`IP Surveillance for Your Life`
+cctv,/,body=`/nobody/loginDevice.js`
+cctv,/,headers=`JAWS`
+cctv,/favicon.ico,md5=`f066b751b858f75ef46536f5b357972b`
+dahua,/favicon.ico,md5=`bd9e17c46bbbc18af2a2bd718dddad0e`
+dahua,/favicon.ico,md5=`605f51b413980667766a9aff2e53b9ed`
+dahua,/favicon.ico,md5=`b39f249362a2e4ab62be4ddbc9125f53`
+dahua,/image/lgbg.jpg,md5=`4ff53be6165e430af41d782e00207fda`
+dlink-dcs,/,headers=`realm="DCS`
+dlink-dcs,/,headers=`realm=DCS`
+dvr,/login.rsp,title=`LOGIN`
+geovision,/,title=`GeoVision`
+hikvision,/,body=`doc/page/login.asp`
+hikvision,/,body=`g_szCacheTime`&&body=`iVMS`
+hikvision,/,headers=`APP-webs`
+hikvision,/,headers=`DVRDVS-Webs`
+hikvision,/,headers=`DNVRS-Webs`
+hikvision,/,headers=`Hikvision-Webs`
+hikvision,/,headers=`_goaheadwebSessionId`
+hikvision,/,title=`hikvision`
+hikvision,/favicon.ico,md5=`89b932fcc47cf4ca3faadb0cfdef89cf`
+instar,/,title=`INSTAR`&&title=`Camera`
+ipcamera,/,headers=`IPCamera`&&status_code=`401`
+netwave,/,headers=`Netwave IP Camera`
+tenda,/,title=`Tenda | login`
+tenda,/,title=`Tenda|login`
+tenda,/,title=`Tenda | 登录`
+tenda,/,title=`Tenda|登录`
+tenda,/,title=`Tenda | Web Master`
+tenda,/,title=`Tenda | Wireless Router`
+tenda,/favicon.ico,md5=`fa31b29eab2da688b11d8fafc5fc6b27`
+uniview,/favicon.ico,md5=`1536f25632f78fb03babedcb156d3f69`

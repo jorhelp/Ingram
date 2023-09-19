@@ -1,4 +1,4 @@
-"""Network Tools"""
+"""网络相关函数"""
 import IPy
 import random
 import requests
@@ -6,10 +6,12 @@ from xml import etree
 
 
 def get_ip_segment(start: str, end: str) -> str:
+    """根据 IP 获取 IP 段"""
     return IPy.IP(f"{start}-{end}", make_net=True).strNormal()
 
 
 def get_ip_seg_len(ip_seg: str) -> int:
+    """获取一个 IP 段内的 IP 数目"""
     if '-' in ip_seg or '/' in ip_seg:
         return IPy.IP(ip_seg, make_net=True).len()
     else:
@@ -17,6 +19,7 @@ def get_ip_seg_len(ip_seg: str) -> int:
 
 
 def get_all_ip(ip_seg: str) -> list:
+    """获取一个 IP 段内的所有 IP"""
     if '-' in ip_seg or '/' in ip_seg:
         return [i.strNormal() for i in IPy.IP(ip_seg, make_net=True)]
     else:
@@ -24,6 +27,7 @@ def get_all_ip(ip_seg: str) -> list:
 
 
 def scrapy_useragent() -> None:
+    """User-Agent 爬虫"""
     base_url = 'https://useragentstring.com/pages/'
     browsers = ['Chrome', 'Firefox', 'Edge', 'Safari', 'Opera']
     res = {i:[] for i in browsers}
@@ -32,15 +36,16 @@ def scrapy_useragent() -> None:
         page = requests.get(url)
         tree = etree.HTML(page.text)
         items = tree.xpath('/html/body/div[2]/div[2]/div/ul')
-        for i in items[:100]:  # get the first 100 items, since the tail item may be too old
+        # 拿取前 100 条，因为后面的都是比较老旧的浏览器版本
+        for i in items[:100]:  
             res[browser].append(i.xpath('li/a')[0].text)
     print(res)
 
 
 def get_user_agent(name='random') -> str:
-    """User-Agent
-    grabs up to date from https://useragentstring.com/pages/useragentstring.php
-    run the scrapy_useragent function, and paste the output to bellow
+    """随机获取一个 User-Agent
+    数据来源: https://useragentstring.com/pages/useragentstring.php
+    通过运行 scrapy_useragent 函数, 并将运行结果粘贴到下方得到
     """
     user_agents = {'Chrome': ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36',

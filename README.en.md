@@ -6,7 +6,7 @@
 <!-- icons -->
 <div align=center>
     <img alt="Platform" src="https://img.shields.io/badge/platform-Linux%20|%20Mac-blue.svg">
-    <img alt="Python Version" src="https://img.shields.io/badge/python-3.7|3.8-yellow.svg">
+    <img alt="Python Version" src="https://img.shields.io/badge/python-3.8-yellow.svg">
     <img alt="GitHub" src="https://img.shields.io/github/license/jorhelp/Ingram">
     <img alt="Github Checks" src="https://img.shields.io/github/checks-status/jorhelp/Ingram/master">
     <img alt="GitHub Last Commit (master)" src="https://img.shields.io/github/last-commit/jorhelp/Ingram/master">
@@ -26,7 +26,7 @@ This is a web camera device vulnerability scanning tool, which already supports 
 
 ## Installation
 
-**There are still bugs running on windows, so linux or mac is recommended. Please make sure you have installed Python >= 3.7**
+**Please run it under Linux or Mac. Please make sure you have installed Python >= 3.8, but 3.11 is not recommended.**
 
 + Firstly, clone this repo:
 ```bash
@@ -53,7 +53,7 @@ So far, it has been installed!
 
 + Since it is configured in a virtual environment, pls activate the virtual environment before each running
 
-+ You need to prepare an object file, let's name it `input`, which contains the targets that will be scanned. The `input` file content can be:
++ You need to prepare an target file, let's name it `input`, which contains the targets that will be scanned. The content of `input` file can be:
 ```
 # use '#' to comment
 
@@ -70,36 +70,38 @@ So far, it has been installed!
 192.168.0.0-192.168.255.255
 ```
 
-+ With the `input`, we start scanning:
++ With the `input` file, let's start scanning:
 ```bash
-python run_ingram.py -i input -o output
+python3 run_ingram.py -i input -o output
 ```
 
-+ If you specified the port like: `x.x.x.x:80`, then the 80 port will be scanned, otherwise common ports will be scanned(defined in `Ingram/utils/config.py`). And you can also override it with the `-p` argument such as:
++ If you specified the port like: `x.x.x.x:80`, then the port 80 will be scanned, otherwise common ports will be scanned(defined in `Ingram/config.py`). And you can also override it with the `-p` argument such as:
 ```bash
-python run_ingram.py -i input -o output -p 80 81 8000
+python3 run_ingram.py -i input -o output -p 80 81 8000
 ```
 
 + The number of coroutines can be controlled by the `-t` argument:
 ```bash
-python run_ingram.py -i input -o output -t 300
+python3 run_ingram.py -i input -o output -t 500
 ```
 
 + all arguments：
 ```
 optional arguments:
-  -h, --help            print help info
+  -h, --help            show this help message and exit
   -i IN_FILE, --in_file IN_FILE
-                        the input file
+                        the targets will be scan
   -o OUT_DIR, --out_dir OUT_DIR
-                        the output file
-  -p PORT [PORT ...], --port PORT [PORT ...]
-                        port
+                        the dir where results will be saved
+  -p PORTS [PORTS ...], --ports PORTS [PORTS ...]
+                        the port(s) to detect
   -t TH_NUM, --th_num TH_NUM
-                        coroutines number
-  -T TIME_OUT, --time_out TIME_OUT
-                        time out
-  --debug               debug
+                        the processes num
+  -T TIMEOUT, --timeout TIMEOUT
+                        requests timeout
+  -D, --disable_snapshot
+                        disable snapshot
+  --debug
 ```
 
 
@@ -113,7 +115,7 @@ optional arguments:
 
 + After masscan is done, sort out the result file: `grep 'open' OUTPUT | awk '{printf"%s:%s\n", $4, $3} > input'`
 
-+ Then, start your show: `python run_ingram.py -i input -o output`
++ Then: `python run_ingram.py -i input -o output`
 
 
 ## Output
@@ -126,7 +128,7 @@ optional arguments:
 └── log.txt
 ```
 
-+ `results.csv` contains the vulnerable devices: `ip,port,device-type,user,passwd,vul`:  
++ `results.csv` contains the vulnerable devices: `ip,port,device-type,user,password,vul`: 
 
 <div align=center>
     <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/results.png">
@@ -139,6 +141,11 @@ optional arguments:
 <div align=center>
     <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/snapshots.png">
 </div>
+
+
+## Warning
+
+This tool is for security testing only, it is strictly prohibited to use it for illegal purposes, and the consequences have nothing to do with this team.
 
 
 ## Thanks & Reference
