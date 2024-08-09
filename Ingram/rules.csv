@@ -22,6 +22,7 @@ hikvision,/favicon.ico,md5=`89b932fcc47cf4ca3faadb0cfdef89cf`
 instar,/,title=`INSTAR`&&title=`Camera`
 ipcamera,/,headers=`IPCamera`&&status_code=`401`
 netwave,/,headers=`Netwave IP Camera`
+reecam,/,headers=`ReeCam IP Camera`
 tenda,/,title=`Tenda | login`
 tenda,/,title=`Tenda|login`
 tenda,/,title=`Tenda | 登录`
