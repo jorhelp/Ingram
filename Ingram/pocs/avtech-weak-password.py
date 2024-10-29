@@ -21,7 +21,8 @@ class AVTechWeakPassword(POCTemplate):
         headers = {'Connection': 'close', 'User-Agent': self.config.user_agent}
         for user in self.config.users:
             for password in self.config.passwords:
-                url = f"http://{ip}:{port}/cgi-bin/nobody/VerifyCode.cgi?account={base64.b64encode(f"{user}:{password}".encode('utf8')).decode()}"
+                account = base64.b64encode(f"{user}:{password}".encode('utf8')).decode()
+                url = f"http://{ip}:{port}/cgi-bin/nobody/VerifyCode.cgi?account={account}"
                 try:
                     r = requests.get(url, headers=headers, verify=False, timeout=self.config.timeout)
                     if r.status_code == 200:

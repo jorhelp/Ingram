@@ -3,10 +3,10 @@ gevent
 IPy
 loguru
 lxml
-ndjson>=0.3.1
-pwn~=1.0
-pwntools>=4.3.1
-pycryptodome>=3.9.7
-pyOpenSSL>=19.1.0
-requests>=2.20.0
-tzlocal>=2.1
+ndjson
+pwn
+pwntools
+pycryptodome
+pyOpenSSL
+requests
+tzlocal
