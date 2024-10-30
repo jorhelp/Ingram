@@ -55,7 +55,7 @@ class POCTemplate:
                 res = requests.get(url, auth=auth, timeout=self.config.timeout, verify=False, headers=headers, stream=True)
             else:
                 res = requests.get(url, timeout=self.config.timeout, verify=False, headers=headers, stream=True)
-            if res.status_code == 200:
+            if res.status_code == 200 and 'head' not in res.text:
                 with open(img_path, 'wb') as f:
                     # 每次写入 10 KB
                     for content in res.iter_content(10240):
