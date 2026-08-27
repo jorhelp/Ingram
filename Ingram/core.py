@@ -106,11 +106,11 @@ class Core:
                 self.snapshot_pipeline_thread = Thread(target=self.snapshot_pipeline.process, args=[self, ], daemon=True)
                 self.snapshot_pipeline_thread.start()
             # 扫描
-            # with common.IngramThreadPool(self.config.th_num) as pool:
-            #     pool.map(self._scan, self.data.ip_generator)
+            # 使用 pool.spawn 而非 start(gevent.spawn(...)): 前者先获取池信号量再创建协程,
+            # 从而把并发严格约束在 th_num; 旧写法会先 spawn 协程再获取信号量, 可能短暂超出上限
             scan_pool = geventPool(self.config.th_num)
             for ip in self.data.ip_generator:
-                scan_pool.start(gevent.spawn(self._scan, ip))
+                scan_pool.spawn(self._scan, ip)
             scan_pool.join()
 
             # self.snapshot_pipeline_thread.join()

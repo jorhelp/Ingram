@@ -2,7 +2,7 @@
 import IPy
 import random
 import requests
-from xml import etree
+from lxml import etree
 
 
 def get_ip_segment(start: str, end: str) -> str:
@@ -10,9 +10,23 @@ def get_ip_segment(start: str, end: str) -> str:
     return IPy.IP(f"{start}-{end}", make_net=True).strNormal()
 
 
+def _range_bounds(ip_seg: str):
+    """解析 'start-end' 形式的区间, 返回 (start_int, end_int)
+    支持任意区间 (无需与网络边界对齐)"""
+    start, end = ip_seg.split('-', 1)
+    start_int = IPy.IP(start.strip()).int()
+    end_int = IPy.IP(end.strip()).int()
+    if end_int < start_int:
+        start_int, end_int = end_int, start_int
+    return start_int, end_int
+
+
 def get_ip_seg_len(ip_seg: str) -> int:
     """获取一个 IP 段内的 IP 数目"""
-    if '-' in ip_seg or '/' in ip_seg:
+    if '-' in ip_seg:
+        start_int, end_int = _range_bounds(ip_seg)
+        return end_int - start_int + 1
+    elif '/' in ip_seg:
         return IPy.IP(ip_seg, make_net=True).len()
     else:
         return 1
@@ -20,7 +34,11 @@ def get_ip_seg_len(ip_seg: str) -> int:
 
 def get_all_ip(ip_seg: str):
     """获取一个 IP 段内的所有 IP"""
-    if '-' in ip_seg or '/' in ip_seg:
+    if '-' in ip_seg:
+        start_int, end_int = _range_bounds(ip_seg)
+        for i in range(start_int, end_int + 1):
+            yield IPy.IP(i).strNormal()
+    elif '/' in ip_seg:
         for i in IPy.IP(ip_seg, make_net=True):
             yield i.strNormal()
     else:

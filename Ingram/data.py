@@ -34,6 +34,11 @@ class Data:
         self.vulnerable_lock = Lock()
         self.not_vulneralbe_lock = Lock()
 
+        # 非漏洞设备占绝大多数, 逐条 flush 会成为磁盘 I/O 瓶颈,
+        # 因此按批 flush, 只在写入达到阈值时落盘 (进程退出时 __del__ 会补一次)
+        self._not_vuln_pending = 0
+        self._not_vuln_flush_every = 50
+
         self.preprocess()
 
     def _load_state_from_disk(self):
@@ -130,7 +135,10 @@ class Data:
     def add_not_vulnerable(self, item):
         with self.not_vulneralbe_lock:
             self.not_vulneralbe.writelines(','.join(item) + '\n')
-            self.not_vulneralbe.flush()
+            self._not_vuln_pending += 1
+            if self._not_vuln_pending >= self._not_vuln_flush_every:
+                self.not_vulneralbe.flush()
+                self._not_vuln_pending = 0
 
     def record_running_state(self):
         # 每隔 20 个记录一下当前运行状态

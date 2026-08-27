@@ -99,13 +99,30 @@ optional arguments:
                         the dir where results will be saved
   -p PORTS [PORTS ...], --ports PORTS [PORTS ...]
                         the port(s) to detect
+  -u USERS [USERS ...], --users USERS [USERS ...]
+                        用于弱口令检测的用户名 (覆盖默认值)
+  --passwords PASSWORDS [PASSWORDS ...]
+                        用于弱口令检测的密码 (覆盖默认值)
+  -U USERS_FILE, --users-file USERS_FILE
+                        用户名文件, 每行一个 (支持 # 注释)
+  -P PASS_FILE, --pass-file PASS_FILE
+                        密码文件, 每行一个 (支持 # 注释)
   -t TH_NUM, --th_num TH_NUM
                         the processes num
   -T TIMEOUT, --timeout TIMEOUT
                         requests timeout
   -D, --disable_snapshot
                         disable snapshot
+  --no-resume           不从上次扫描结果继续, 重新开始
   --debug
+```
+
++ 可以自定义弱口令检测使用的凭据, 支持命令行内联或从文件读取:
+```bash
+# 命令行内联
+python3 run_ingram.py -i input -o output -u admin root --passwords admin 12345 ""
+# 从文件读取 (每行一个, 支持 '#' 注释)
+python3 run_ingram.py -i input -o output -U users.txt -P passwords.txt
 ```
 
 
