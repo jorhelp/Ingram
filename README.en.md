@@ -109,6 +109,11 @@ optional arguments:
                         requests timeout
   -D, --disable_snapshot
                         disable snapshot
+  -f {csv,json,both}, --format {csv,json,both}
+                        output format for results (default: csv)
+  --poc POC [POC ...]   only run these POCs (by file name or product name)
+  --exclude-poc EXCLUDE_POC [EXCLUDE_POC ...]
+                        exclude these POCs (by file name or product name)
   --no-resume           do not resume from previous scan, start fresh
   --debug
 ```
@@ -120,6 +125,16 @@ python3 run_ingram.py -i input -o output -u admin root --passwords admin 12345 "
 # from files (one entry per line, '#' comments allowed)
 python3 run_ingram.py -i input -o output -U users.txt -P passwords.txt
 ```
+
++ You can select which POCs to run (handy to focus a scan or skip noisy ones), and emit machine-readable results:
+```bash
+# only Hikvision/Dahua POCs, results also written as NDJSON
+python3 run_ingram.py -i input -o output --poc hikvision dahua -f both
+# run everything except a specific POC
+python3 run_ingram.py -i input -o output --exclude-poc dahua-weak-password
+```
+
++ With `-f json` (or `both`) results are additionally written as one JSON object per line (NDJSON) to `results.json` / `not_vulnerable.json`, with named fields (`ip`, `port`, `product`, `user`, `password`, `poc`). This avoids the quoting issues of CSV and is easy to pipe into other tools.
 
 
 ## Port scanner

@@ -113,6 +113,11 @@ optional arguments:
                         requests timeout
   -D, --disable_snapshot
                         disable snapshot
+  -f {csv,json,both}, --format {csv,json,both}
+                        结果输出格式 (默认: csv)
+  --poc POC [POC ...]   仅运行这些 POC (按文件名或产品名)
+  --exclude-poc EXCLUDE_POC [EXCLUDE_POC ...]
+                        排除这些 POC (按文件名或产品名)
   --no-resume           不从上次扫描结果继续, 重新开始
   --debug
 ```
@@ -124,6 +129,16 @@ python3 run_ingram.py -i input -o output -u admin root --passwords admin 12345 "
 # 从文件读取 (每行一个, 支持 '#' 注释)
 python3 run_ingram.py -i input -o output -U users.txt -P passwords.txt
 ```
+
++ 可以选择要运行的 POC (聚焦扫描或跳过噪声), 并输出机器可读的结果:
+```bash
+# 只运行海康/大华的 POC, 同时输出 NDJSON
+python3 run_ingram.py -i input -o output --poc hikvision dahua -f both
+# 运行除某个 POC 外的全部
+python3 run_ingram.py -i input -o output --exclude-poc dahua-weak-password
+```
+
++ 使用 `-f json` (或 `both`) 时, 结果会额外以每行一个 JSON 对象 (NDJSON) 的形式写入 `results.json` / `not_vulnerable.json`, 字段带有名称 (`ip`, `port`, `product`, `user`, `password`, `poc`), 避免了 CSV 的转义问题, 便于接入其他工具。
 
 
 ## 端口扫描器

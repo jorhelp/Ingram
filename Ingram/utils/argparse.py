@@ -14,6 +14,9 @@ def get_parse():
     parser.add_argument('-t', '--th_num', type=int, default=150, help='the processes num')
     parser.add_argument('-T', '--timeout', type=int, default=3, help='requests timeout')
     parser.add_argument('-D', '--disable_snapshot', action='store_true', help='disable snapshot')
+    parser.add_argument('-f', '--format', choices=['csv', 'json', 'both'], default='csv', help='output format for results (default: csv)')
+    parser.add_argument('--poc', type=str, nargs='+', default=None, help='only run these POCs (by file name or product name)')
+    parser.add_argument('--exclude-poc', type=str, nargs='+', default=None, help='exclude these POCs (by file name or product name)')
     parser.add_argument('--debug', action='store_true', help='log all msg')
     parser.add_argument('--no-resume', action='store_true', help='do not resume from previous scan, start fresh')
 

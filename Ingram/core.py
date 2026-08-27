@@ -1,3 +1,4 @@
+import json
 import os
 from collections import defaultdict
 from threading import Thread
@@ -16,6 +17,29 @@ from .utils import status_bar
 from .utils import timer
 
 
+def read_result_rows(csv_file, json_file):
+    """读取漏洞结果, 返回 (product, poc) 列表
+    优先读 CSV; 若仅有 JSON 输出 (-f json) 则读 JSON"""
+    rows = []
+    if os.path.exists(csv_file):
+        with open(csv_file, 'r') as f:
+            for line in f:
+                if (line := line.strip()):
+                    parts = line.split(',')
+                    if len(parts) >= 3:
+                        rows.append((parts[2], parts[-1]))
+    elif os.path.exists(json_file):
+        with open(json_file, 'r') as f:
+            for line in f:
+                if (line := line.strip()):
+                    try:
+                        rec = json.loads(line)
+                    except Exception:
+                        continue
+                    rows.append((rec.get('product', ''), rec.get('poc', '')))
+    return rows
+
+
 @common.singleton
 class Core:
 
@@ -30,31 +54,31 @@ class Core:
 
     def report(self):
         """report the results"""
-        results_file = os.path.join(self.config.out_dir, self.config.vulnerable)
-        if os.path.exists(results_file):
-            with open(results_file, 'r') as f:
-                items = [l.strip().split(',') for l in f if l.strip()]
+        items = read_result_rows(
+            os.path.join(self.config.out_dir, self.config.vulnerable),
+            os.path.join(self.config.out_dir, self.config.vulnerable_json))
+        if not items:
+            return
 
-            if items:
-                results = defaultdict(lambda: defaultdict(lambda: 0))
-                for i in items:
-                    dev, vul = i[2].split('-')[0], i[-1]
-                    results[dev][vul] += 1
-                results_sum = len(items)
-                results_max = max([val for vul in results.values() for val in vul.values()])
-                
-                print('\n')
-                print('-' * 19, 'REPORT', '-' * 19)
-                for dev in results:
-                    vuls = [(vul_name, vul_count) for vul_name, vul_count in results[dev].items()]
-                    dev_sum = sum([i[1] for i in vuls])
-                    print(color.red(f"{dev} {dev_sum}", 'bright'))
-                    for vul_name, vul_count in vuls:
-                        block_num = int(vul_count / results_max * 25)
-                        print(color.green(f"{vul_name:>18} | {'▥' * block_num} {vul_count}"))
-                print(color.yellow(f"{'sum: ' + str(results_sum):>46}", 'bright'), flush=True)
-                print('-' * 46)
-                print('\n')
+        results = defaultdict(lambda: defaultdict(lambda: 0))
+        for product, vul in items:
+            dev = product.split('-')[0]
+            results[dev][vul] += 1
+        results_sum = len(items)
+        results_max = max([val for vul in results.values() for val in vul.values()])
+
+        print('\n')
+        print('-' * 19, 'REPORT', '-' * 19)
+        for dev in results:
+            vuls = [(vul_name, vul_count) for vul_name, vul_count in results[dev].items()]
+            dev_sum = sum([i[1] for i in vuls])
+            print(color.red(f"{dev} {dev_sum}", 'bright'))
+            for vul_name, vul_count in vuls:
+                block_num = int(vul_count / results_max * 25)
+                print(color.green(f"{vul_name:>18} | {'▥' * block_num} {vul_count}"))
+        print(color.yellow(f"{'sum: ' + str(results_sum):>46}", 'bright'), flush=True)
+        print('-' * 46)
+        print('\n')
 
     def _scan_port(self, ip, port):
         if port_scan(ip, port, self.config.timeout):

@@ -22,11 +22,16 @@ _config = {
 
     # runtime flags
     'no_resume': False,
+    'format': 'csv',       # 输出格式: csv | json | both
+    'poc': None,           # 仅运行这些 POC (按文件名或产品名); None 表示全部
+    'exclude_poc': None,   # 排除这些 POC (按文件名或产品名)
 
     # file & dir
     'log': 'log.txt',
     'not_vulnerable': 'not_vulnerable.csv',
     'vulnerable': 'results.csv',
+    'not_vulnerable_json': 'not_vulnerable.json',
+    'vulnerable_json': 'results.json',
     'snapshots': 'snapshots',
 
     # wechat
