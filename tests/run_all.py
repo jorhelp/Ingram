@@ -25,6 +25,7 @@ IN_PROCESS = [
 STANDALONE = [
     'tests/test_integration.py',
     'tests/test_output_files.py',
+    'tests/test_persistence.py',
 ]
 
 total = failed = 0

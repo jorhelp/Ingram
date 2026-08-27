@@ -47,11 +47,6 @@ class Data:
         self.vulnerable_lock = Lock()
         self.not_vulneralbe_lock = Lock()
 
-        # 非漏洞设备占绝大多数, 逐条 flush 会成为磁盘 I/O 瓶颈,
-        # 因此按批 flush, 只在写入达到阈值时落盘 (进程退出时 __del__ 会补一次)
-        self._not_vuln_pending = 0
-        self._not_vuln_flush_every = 50
-
         self.preprocess()
 
     def _load_state_from_disk(self):
@@ -158,19 +153,17 @@ class Data:
                 self.vulnerable_json.flush()
 
     def add_not_vulnerable(self, item):
+        # 每条都 flush: 扫描在 fork 出的子进程中运行, 结束时经由 os._exit()
+        # 退出, 会跳过 Python 终结逻辑 (__del__/close), 缓冲区里的记录会永久丢失;
+        # flush 后数据已进入 OS 页缓存, 不受影响 (flush 只是 write 系统调用, 开销很小)
         item = [str(x) for x in item]
         with self.not_vulneralbe_lock:
             if self.not_vulneralbe is not None:
                 self.not_vulneralbe.write(','.join(item) + '\n')
+                self.not_vulneralbe.flush()
             if self.not_vulnerable_json is not None:
                 self.not_vulnerable_json.write(json_line(NOT_VULN_FIELDS, item))
-            self._not_vuln_pending += 1
-            if self._not_vuln_pending >= self._not_vuln_flush_every:
-                if self.not_vulneralbe is not None:
-                    self.not_vulneralbe.flush()
-                if self.not_vulnerable_json is not None:
-                    self.not_vulnerable_json.flush()
-                self._not_vuln_pending = 0
+                self.not_vulnerable_json.flush()
 
     def record_running_state(self):
         # 每隔 20 个记录一下当前运行状态

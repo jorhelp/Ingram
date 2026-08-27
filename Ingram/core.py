@@ -17,27 +17,44 @@ from .utils import status_bar
 from .utils import timer
 
 
-def read_result_rows(csv_file, json_file):
-    """读取漏洞结果, 返回 (product, poc) 列表
-    优先读 CSV; 若仅有 JSON 输出 (-f json) 则读 JSON"""
+def _read_csv_rows(csv_file):
     rows = []
-    if os.path.exists(csv_file):
-        with open(csv_file, 'r') as f:
-            for line in f:
-                if (line := line.strip()):
-                    parts = line.split(',')
-                    if len(parts) >= 3:
-                        rows.append((parts[2], parts[-1]))
-    elif os.path.exists(json_file):
-        with open(json_file, 'r') as f:
-            for line in f:
-                if (line := line.strip()):
-                    try:
-                        rec = json.loads(line)
-                    except Exception:
-                        continue
-                    rows.append((rec.get('product', ''), rec.get('poc', '')))
+    with open(csv_file, 'r') as f:
+        for line in f:
+            if (line := line.strip()):
+                parts = line.split(',')
+                if len(parts) >= 3:
+                    rows.append((parts[2], parts[-1]))
     return rows
+
+
+def _read_json_rows(json_file):
+    rows = []
+    with open(json_file, 'r') as f:
+        for line in f:
+            if (line := line.strip()):
+                try:
+                    rec = json.loads(line)
+                except Exception:
+                    continue
+                rows.append((rec.get('product', ''), rec.get('poc', '')))
+    return rows
+
+
+def read_result_rows(csv_file, json_file, fmt='csv'):
+    """读取漏洞结果, 返回 (product, poc) 列表
+
+    按本次运行的输出格式选择数据源, 而不是看磁盘上哪个文件存在:
+    这样在同一 out_dir 上切换 -f 时, 不会误读上一次运行遗留的 results.csv。
+    """
+    if fmt == 'json':
+        return _read_json_rows(json_file) if os.path.exists(json_file) else []
+    # csv / both: 本次会写 results.csv, 优先读它; 缺失时回退到 json
+    if os.path.exists(csv_file):
+        return _read_csv_rows(csv_file)
+    if os.path.exists(json_file):
+        return _read_json_rows(json_file)
+    return []
 
 
 @common.singleton
@@ -56,7 +73,8 @@ class Core:
         """report the results"""
         items = read_result_rows(
             os.path.join(self.config.out_dir, self.config.vulnerable),
-            os.path.join(self.config.out_dir, self.config.vulnerable_json))
+            os.path.join(self.config.out_dir, self.config.vulnerable_json),
+            getattr(self.config, 'format', 'csv'))
         if not items:
             return
 
