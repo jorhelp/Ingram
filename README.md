@@ -99,14 +99,64 @@ optional arguments:
                         the dir where results will be saved
   -p PORTS [PORTS ...], --ports PORTS [PORTS ...]
                         the port(s) to detect
+  -u USERS [USERS ...], --users USERS [USERS ...]
+                        用于弱口令检测的用户名 (覆盖默认值)
+  --passwords PASSWORDS [PASSWORDS ...]
+                        用于弱口令检测的密码 (覆盖默认值)
+  -U USERS_FILE, --users-file USERS_FILE
+                        用户名文件, 每行一个 (支持 # 注释)
+  -P PASS_FILE, --pass-file PASS_FILE
+                        密码文件, 每行一个 (支持 # 注释)
   -t TH_NUM, --th_num TH_NUM
                         the processes num
   -T TIMEOUT, --timeout TIMEOUT
                         requests timeout
   -D, --disable_snapshot
                         disable snapshot
+  -f {csv,json,both}, --format {csv,json,both}
+                        结果输出格式 (默认: csv)
+  --poc POC [POC ...]   仅运行这些 POC (按文件名或产品名)
+  --exclude-poc EXCLUDE_POC [EXCLUDE_POC ...]
+                        排除这些 POC (按文件名或产品名)
+  -R RATE, --rate RATE  每秒新主机扫描速率上限 (0 = 不限速)
+  --retries RETRIES     HTTP 指纹探测失败时的额外重试次数 (默认: 0)
+  --retry-delay RETRY_DELAY
+                        每次重试之间的等待秒数 (默认: 0)
+  --html-report         额外在输出目录生成 HTML 汇总报告 (report.html)
+  --no-resume           不从上次扫描结果继续, 重新开始
   --debug
 ```
+
++ 可以自定义弱口令检测使用的凭据, 支持命令行内联或从文件读取:
+```bash
+# 命令行内联
+python3 run_ingram.py -i input -o output -u admin root --passwords admin 12345 ""
+# 从文件读取 (每行一个, 支持 '#' 注释)
+python3 run_ingram.py -i input -o output -U users.txt -P passwords.txt
+```
+
++ 可以选择要运行的 POC (聚焦扫描或跳过噪声), 并输出机器可读的结果:
+```bash
+# 只运行海康/大华的 POC, 同时输出 NDJSON
+python3 run_ingram.py -i input -o output --poc hikvision dahua -f both
+# 运行除某个 POC 外的全部
+python3 run_ingram.py -i input -o output --exclude-poc dahua-weak-password
+```
+
++ 使用 `-f json` (或 `both`) 时, 结果会额外以每行一个 JSON 对象 (NDJSON) 的形式写入 `results.json` / `not_vulnerable.json`, 字段带有名称 (`ip`, `port`, `product`, `user`, `password`, `poc`), 避免了 CSV 的转义问题, 便于接入其他工具。
+
++ 可以对扫描进行限速与重试, 以适应不稳定网络或降低对目标的压力:
+```bash
+# 每秒最多启动 20 个新主机的扫描, 对 HTTP 指纹探测失败重试 2 次, 每次间隔 0.5s
+python3 run_ingram.py -i input -o output --rate 20 --retries 2 --retry-delay 0.5
+```
+
++ 使用 `--html-report` 时, 扫描结束后会在输出目录生成一个自包含的 `report.html` (内联样式, 无外部依赖), 包含按设备的汇总、带严重程度和描述的 FINDINGS, 以及逐条结果表, 便于离线查看和分享:
+```bash
+python3 run_ingram.py -i input -o output --html-report
+```
+
++ 指纹识别在 http 连接失败时会自动回退到 https (很多摄像头只开 https), 并记住可用的协议, 从而在不增加请求量的情况下提升识别覆盖率。
 
 
 ## 端口扫描器

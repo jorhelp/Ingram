@@ -1,5 +1,6 @@
 """数据流"""
 import hashlib
+import json
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -13,6 +14,18 @@ from loguru import logger
 from .utils import common
 from .utils import timer
 from .utils import net
+
+
+# 结构化输出的字段名 (与 results.csv 的列顺序保持一致)
+VULN_FIELDS = ('ip', 'port', 'product', 'user', 'password', 'poc')
+NOT_VULN_FIELDS = ('ip', 'port', 'product')
+
+
+def json_line(fields, item):
+    """把一条记录序列化成一行 NDJSON
+    item 里多出的字段忽略, 缺失的字段以空串补齐"""
+    record = {k: (item[i] if i < len(item) else '') for i, k in enumerate(fields)}
+    return json.dumps(record, ensure_ascii=False) + '\n'
 
 
 @common.singleton
@@ -86,9 +99,16 @@ class Data:
 
     def preprocess(self):
         """预处理"""
-        # 打开记录结果的文件
-        self.vulnerable = open(os.path.join(self.config.out_dir, self.config.vulnerable), 'a')
-        self.not_vulneralbe = open(os.path.join(self.config.out_dir, self.config.not_vulnerable), 'a')
+        out_dir = self.config.out_dir
+        fmt = getattr(self.config, 'format', 'csv')
+        self._write_csv = fmt in ('csv', 'both')
+        self._write_json = fmt in ('json', 'both')
+
+        # 打开记录结果的文件 (按输出格式选择)
+        self.vulnerable = open(os.path.join(out_dir, self.config.vulnerable), 'a') if self._write_csv else None
+        self.not_vulneralbe = open(os.path.join(out_dir, self.config.not_vulnerable), 'a') if self._write_csv else None
+        self.vulnerable_json = open(os.path.join(out_dir, self.config.vulnerable_json), 'a') if self._write_json else None
+        self.not_vulnerable_json = open(os.path.join(out_dir, self.config.not_vulnerable_json), 'a') if self._write_json else None
 
         self._load_state_from_disk()
 
@@ -123,14 +143,27 @@ class Data:
                 self.done += sum(item)
 
     def add_vulnerable(self, item):
+        item = [str(x) for x in item]
         with self.vulnerable_lock:
-            self.vulnerable.writelines(','.join(item) + '\n')
-            self.vulnerable.flush()
+            if self.vulnerable is not None:
+                self.vulnerable.write(','.join(item) + '\n')
+                self.vulnerable.flush()
+            if self.vulnerable_json is not None:
+                self.vulnerable_json.write(json_line(VULN_FIELDS, item))
+                self.vulnerable_json.flush()
 
     def add_not_vulnerable(self, item):
+        # 每条都 flush: 扫描在 fork 出的子进程中运行, 结束时经由 os._exit()
+        # 退出, 会跳过 Python 终结逻辑 (__del__/close), 缓冲区里的记录会永久丢失;
+        # flush 后数据已进入 OS 页缓存, 不受影响 (flush 只是 write 系统调用, 开销很小)
+        item = [str(x) for x in item]
         with self.not_vulneralbe_lock:
-            self.not_vulneralbe.writelines(','.join(item) + '\n')
-            self.not_vulneralbe.flush()
+            if self.not_vulneralbe is not None:
+                self.not_vulneralbe.write(','.join(item) + '\n')
+                self.not_vulneralbe.flush()
+            if self.not_vulnerable_json is not None:
+                self.not_vulnerable_json.write(json_line(NOT_VULN_FIELDS, item))
+                self.not_vulnerable_json.flush()
 
     def record_running_state(self):
         # 每隔 20 个记录一下当前运行状态
@@ -141,8 +174,10 @@ class Data:
     def __del__(self):
         try:  # if dont use try, sys.exit() may cause error
             self.record_running_state()
-            self.vulnerable.close()
-            self.not_vulneralbe.close()
+            for writer in (self.vulnerable, self.not_vulneralbe,
+                           self.vulnerable_json, self.not_vulnerable_json):
+                if writer is not None:
+                    writer.close()
         except Exception as e:
             logger.error(e)
 

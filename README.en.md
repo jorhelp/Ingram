@@ -95,14 +95,64 @@ optional arguments:
                         the dir where results will be saved
   -p PORTS [PORTS ...], --ports PORTS [PORTS ...]
                         the port(s) to detect
+  -u USERS [USERS ...], --users USERS [USERS ...]
+                        username(s) for weak-password checks (overrides defaults)
+  --passwords PASSWORDS [PASSWORDS ...]
+                        password(s) for weak-password checks (overrides defaults)
+  -U USERS_FILE, --users-file USERS_FILE
+                        file with one username per line (# comments allowed)
+  -P PASS_FILE, --pass-file PASS_FILE
+                        file with one password per line (# comments allowed)
   -t TH_NUM, --th_num TH_NUM
                         the processes num
   -T TIMEOUT, --timeout TIMEOUT
                         requests timeout
   -D, --disable_snapshot
                         disable snapshot
+  -f {csv,json,both}, --format {csv,json,both}
+                        output format for results (default: csv)
+  --poc POC [POC ...]   only run these POCs (by file name or product name)
+  --exclude-poc EXCLUDE_POC [EXCLUDE_POC ...]
+                        exclude these POCs (by file name or product name)
+  -R RATE, --rate RATE  max new hosts scanned per second (0 = unlimited)
+  --retries RETRIES     extra retries for HTTP fingerprint probes on network errors (default: 0)
+  --retry-delay RETRY_DELAY
+                        seconds to wait between retries (default: 0)
+  --html-report         also write an HTML summary report (report.html) to the output dir
+  --no-resume           do not resume from previous scan, start fresh
   --debug
 ```
+
++ You can customize the credentials used by the weak-password POCs, either inline or from files:
+```bash
+# inline
+python3 run_ingram.py -i input -o output -u admin root --passwords admin 12345 ""
+# from files (one entry per line, '#' comments allowed)
+python3 run_ingram.py -i input -o output -U users.txt -P passwords.txt
+```
+
++ You can select which POCs to run (handy to focus a scan or skip noisy ones), and emit machine-readable results:
+```bash
+# only Hikvision/Dahua POCs, results also written as NDJSON
+python3 run_ingram.py -i input -o output --poc hikvision dahua -f both
+# run everything except a specific POC
+python3 run_ingram.py -i input -o output --exclude-poc dahua-weak-password
+```
+
++ With `-f json` (or `both`) results are additionally written as one JSON object per line (NDJSON) to `results.json` / `not_vulnerable.json`, with named fields (`ip`, `port`, `product`, `user`, `password`, `poc`). This avoids the quoting issues of CSV and is easy to pipe into other tools.
+
++ You can throttle and add retries to a scan, to cope with flaky networks or reduce load on targets:
+```bash
+# start at most 20 new hosts/sec, retry failed HTTP fingerprint probes twice, 0.5s apart
+python3 run_ingram.py -i input -o output --rate 20 --retries 2 --retry-delay 0.5
+```
+
++ With `--html-report`, a self-contained `report.html` (inline styles, no external dependencies) is written to the output dir at the end of the scan. It contains a per-device summary, a FINDINGS section with severity and description, and a full results table — handy for offline viewing and sharing:
+```bash
+python3 run_ingram.py -i input -o output --html-report
+```
+
++ Fingerprinting now falls back to https when http can't connect (many cameras are https-only) and remembers the working scheme, improving detection coverage without adding requests.
 
 
 ## Port scanner

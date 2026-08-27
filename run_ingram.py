@@ -25,6 +25,8 @@ from Ingram.utils import logo
 
 
 def run():
+    p = None
+    config = None
     try:
         # logo
         for icon, font in zip(*logo):
@@ -52,12 +54,14 @@ def run():
 
     except KeyboardInterrupt:
         logger.warning('Ctrl + c was pressed')
-        p.kill()
+        if p is not None:
+            p.kill()
         sys.exit()
 
     except Exception as e:
-        logger.error(e)
-        print(f"{color.red('error occurred, see the')} {color.yellow(config.log)} "
+        logger.exception(e)
+        log_hint = config.log if config is not None else 'log'
+        print(f"{color.red('error occurred, see the')} {color.yellow(log_hint)} "
               f"{color.red('for more information.')}")
         sys.exit()
 
