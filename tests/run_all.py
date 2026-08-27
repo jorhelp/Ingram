@@ -22,11 +22,14 @@ IN_PROCESS = [
     'tests.test_loader',
     'tests.test_report',
     'tests.test_findings',
+    'tests.test_throttle',
+    'tests.test_report_html',
 ]
 STANDALONE = [
     'tests/test_integration.py',
     'tests/test_output_files.py',
     'tests/test_persistence.py',
+    'tests/test_html_report_file.py',
 ]
 
 total = failed = 0

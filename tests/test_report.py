@@ -60,3 +60,33 @@ if __name__ == '__main__':
     for fn in fns:
         fn(); print(f"  ok  {fn.__name__}")
     print(f"\n{len(fns)}/{len(fns)} passed")
+
+
+# --- read_full_result_rows (per il report HTML) -----------------------------
+from Ingram.core import read_full_result_rows
+
+
+def test_full_csv_maps_all_fields():
+    d, c, j = _dir_with(csv='1.2.3.4,80,dahua,admin,pass,dahua-weak-password\n')
+    rows = read_full_result_rows(c, j, 'csv')
+    assert rows == [{'ip': '1.2.3.4', 'port': '80', 'product': 'dahua',
+                     'user': 'admin', 'password': 'pass', 'poc': 'dahua-weak-password'}]
+
+
+def test_full_json_maps_all_fields():
+    d, c, j = _dir_with(js='{"ip":"5.6.7.8","port":"81","product":"hik",'
+                           '"user":"","password":"","poc":"cve-2021-36260"}\n')
+    rows = read_full_result_rows(c, j, 'json')
+    assert rows[0]['ip'] == '5.6.7.8' and rows[0]['poc'] == 'cve-2021-36260'
+
+
+def test_full_missing_files_empty():
+    d, c, j = _dir_with()
+    assert read_full_result_rows(c, j, 'csv') == []
+
+
+def test_full_json_ignores_stale_csv():
+    d, c, j = _dir_with(csv='9.9.9.9,80,stale,u,p,old\n',
+                        js='{"ip":"1.1.1.1","port":"80","product":"x","poc":"fresh"}\n')
+    rows = read_full_result_rows(c, j, 'json')
+    assert len(rows) == 1 and rows[0]['poc'] == 'fresh'

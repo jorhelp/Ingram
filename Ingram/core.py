@@ -7,7 +7,7 @@ import gevent
 from loguru import logger
 from gevent.pool import Pool as geventPool
 
-from .data import Data, SnapshotPipeline
+from .data import Data, SnapshotPipeline, VULN_FIELDS
 from .pocs import get_poc_dict
 from .utils import color
 from .utils import common
@@ -15,6 +15,7 @@ from .utils import fingerprint
 from .utils import port_scan
 from .utils import status_bar
 from .utils import timer
+from .utils.throttle import RateLimiter
 
 
 def _read_csv_rows(csv_file):
@@ -39,6 +40,44 @@ def _read_json_rows(json_file):
                     continue
                 rows.append((rec.get('product', ''), rec.get('poc', '')))
     return rows
+
+
+def _read_csv_full(csv_file):
+    """按 VULN_FIELDS 的列顺序把 results.csv 读成 dict 列表"""
+    rows = []
+    with open(csv_file, 'r') as f:
+        for line in f:
+            if (line := line.strip()):
+                parts = line.split(',')
+                if len(parts) >= 3:
+                    rows.append({k: (parts[i] if i < len(parts) else '')
+                                 for i, k in enumerate(VULN_FIELDS)})
+    return rows
+
+
+def _read_json_full(json_file):
+    rows = []
+    with open(json_file, 'r') as f:
+        for line in f:
+            if (line := line.strip()):
+                try:
+                    rec = json.loads(line)
+                except Exception:
+                    continue
+                rows.append({k: rec.get(k, '') for k in VULN_FIELDS})
+    return rows
+
+
+def read_full_result_rows(csv_file, json_file, fmt='csv'):
+    """与 read_result_rows 相同的数据源选择逻辑, 但返回完整字段的 dict 列表
+    (供 HTML 报告使用)。"""
+    if fmt == 'json':
+        return _read_json_full(json_file) if os.path.exists(json_file) else []
+    if os.path.exists(csv_file):
+        return _read_csv_full(csv_file)
+    if os.path.exists(json_file):
+        return _read_json_full(json_file)
+    return []
 
 
 LEVEL_LABEL = {'高': 'HIGH', '中': 'MEDIUM', '低': 'LOW'}
@@ -92,18 +131,23 @@ class Core:
 
     def report(self):
         """report the results"""
-        items = read_result_rows(
-            os.path.join(self.config.out_dir, self.config.vulnerable),
-            os.path.join(self.config.out_dir, self.config.vulnerable_json),
-            getattr(self.config, 'format', 'csv'))
-        if not items:
-            return
+        fmt = getattr(self.config, 'format', 'csv')
+        csv_path = os.path.join(self.config.out_dir, self.config.vulnerable)
+        json_path = os.path.join(self.config.out_dir, self.config.vulnerable_json)
+        items = read_result_rows(csv_path, json_path, fmt)
 
         # mappa nome_poc -> (severità, descrizione) per arricchire il report
         poc_meta = {}
         for pocs in self.poc_dict.values():
             for poc in pocs:
                 poc_meta[poc.name] = (getattr(poc, 'level', ''), getattr(poc, 'desc', '') or '')
+
+        # report HTML opzionale (scritto anche quando non ci sono findings)
+        if getattr(self.config, 'report_html', False):
+            self._write_html_report(csv_path, json_path, fmt, poc_meta)
+
+        if not items:
+            return
 
         results = defaultdict(lambda: defaultdict(lambda: 0))
         for product, vul in items:
@@ -136,6 +180,26 @@ class Core:
                     print(color.white(f"    {desc}"))
             print('-' * 46)
         print('\n')
+
+    def _write_html_report(self, csv_path, json_path, fmt, poc_meta):
+        """genera e salva il report HTML nella out_dir"""
+        from .utils.report_html import build_html_report
+        rows = read_full_result_rows(csv_path, json_path, fmt)
+        findings = build_findings([r.get('poc', '') for r in rows], poc_meta)
+        meta = {
+            'generated': timer.get_time_formatted(),
+            'total': self.data.total,
+            'done': self.data.done,
+            'found': self.data.found,
+        }
+        html = build_html_report(rows, findings, meta)
+        out_path = os.path.join(self.config.out_dir, self.config.report_html_file)
+        try:
+            with open(out_path, 'w', encoding='utf-8') as f:
+                f.write(html)
+            logger.info(f"html report saved to {out_path}")
+        except Exception as e:
+            logger.error(f"failed to write html report: {e}")
 
     def _scan_port(self, ip, port):
         if port_scan(ip, port, self.config.timeout):
@@ -190,7 +254,13 @@ class Core:
             # 使用 pool.spawn 而非 start(gevent.spawn(...)): 前者先获取池信号量再创建协程,
             # 从而把并发严格约束在 th_num; 旧写法会先 spawn 协程再获取信号量, 可能短暂超出上限
             scan_pool = geventPool(self.config.th_num)
+            # 限速: 约束新主机的启动速率 (0 = 不限速); 在主协程里 gate,
+            # 因为生成/派发循环本身是单协程, 无需加锁
+            rate_limiter = RateLimiter(getattr(self.config, 'rate', 0.0))
             for ip in self.data.ip_generator:
+                wait = rate_limiter.acquire()
+                if wait > 0:
+                    gevent.sleep(wait)
                 scan_pool.spawn(self._scan, ip)
             scan_pool.join()
 

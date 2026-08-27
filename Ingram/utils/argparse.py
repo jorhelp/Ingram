@@ -17,6 +17,10 @@ def get_parse():
     parser.add_argument('-f', '--format', choices=['csv', 'json', 'both'], default='csv', help='output format for results (default: csv)')
     parser.add_argument('--poc', type=str, nargs='+', default=None, help='only run these POCs (by file name or product name)')
     parser.add_argument('--exclude-poc', type=str, nargs='+', default=None, help='exclude these POCs (by file name or product name)')
+    parser.add_argument('-R', '--rate', type=float, default=0.0, help='max new hosts scanned per second (0 = unlimited)')
+    parser.add_argument('--retries', type=int, default=0, help='extra retries for HTTP fingerprint probes on network errors (default: 0)')
+    parser.add_argument('--retry-delay', type=float, default=0.0, help='seconds to wait between retries (default: 0)')
+    parser.add_argument('--html-report', dest='report_html', action='store_true', help='also write an HTML summary report (report.html) to the output dir')
     parser.add_argument('--debug', action='store_true', help='log all msg')
     parser.add_argument('--no-resume', action='store_true', help='do not resume from previous scan, start fresh')
 

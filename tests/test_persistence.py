@@ -4,7 +4,11 @@ processo figlio (fork -> os._exit salta __del__/close/flush).
 Riproduce il modello di run_ingram: Data e' costruito nel parent, la scansione
 gira in un multiprocessing.Process che ritorna normalmente."""
 import warnings; warnings.filterwarnings('ignore')
-from gevent import monkey; monkey.patch_all(thread=False, queue=False)
+# NB: qui NON facciamo gevent.monkey.patch_all: il child-watcher (SIGCHLD) di
+# gevent va in deadlock con multiprocessing fork/join in alcuni ambienti, e non
+# serve a questo test. Il comportamento verificato (i record not_vulnerable
+# sopravvivono all'os._exit del figlio, che salta i finalizzatori) dipende solo
+# dal flush per-scrittura in data.py, non da gevent.
 
 import argparse
 import os

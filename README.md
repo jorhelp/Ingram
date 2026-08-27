@@ -118,6 +118,11 @@ optional arguments:
   --poc POC [POC ...]   仅运行这些 POC (按文件名或产品名)
   --exclude-poc EXCLUDE_POC [EXCLUDE_POC ...]
                         排除这些 POC (按文件名或产品名)
+  -R RATE, --rate RATE  每秒新主机扫描速率上限 (0 = 不限速)
+  --retries RETRIES     HTTP 指纹探测失败时的额外重试次数 (默认: 0)
+  --retry-delay RETRY_DELAY
+                        每次重试之间的等待秒数 (默认: 0)
+  --html-report         额外在输出目录生成 HTML 汇总报告 (report.html)
   --no-resume           不从上次扫描结果继续, 重新开始
   --debug
 ```
@@ -139,6 +144,19 @@ python3 run_ingram.py -i input -o output --exclude-poc dahua-weak-password
 ```
 
 + 使用 `-f json` (或 `both`) 时, 结果会额外以每行一个 JSON 对象 (NDJSON) 的形式写入 `results.json` / `not_vulnerable.json`, 字段带有名称 (`ip`, `port`, `product`, `user`, `password`, `poc`), 避免了 CSV 的转义问题, 便于接入其他工具。
+
++ 可以对扫描进行限速与重试, 以适应不稳定网络或降低对目标的压力:
+```bash
+# 每秒最多启动 20 个新主机的扫描, 对 HTTP 指纹探测失败重试 2 次, 每次间隔 0.5s
+python3 run_ingram.py -i input -o output --rate 20 --retries 2 --retry-delay 0.5
+```
+
++ 使用 `--html-report` 时, 扫描结束后会在输出目录生成一个自包含的 `report.html` (内联样式, 无外部依赖), 包含按设备的汇总、带严重程度和描述的 FINDINGS, 以及逐条结果表, 便于离线查看和分享:
+```bash
+python3 run_ingram.py -i input -o output --html-report
+```
+
++ 指纹识别在 http 连接失败时会自动回退到 https (很多摄像头只开 https), 并记住可用的协议, 从而在不增加请求量的情况下提升识别覆盖率。
 
 
 ## 端口扫描器

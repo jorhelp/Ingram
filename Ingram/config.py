@@ -25,6 +25,10 @@ _config = {
     'format': 'csv',       # 输出格式: csv | json | both
     'poc': None,           # 仅运行这些 POC (按文件名或产品名); None 表示全部
     'exclude_poc': None,   # 排除这些 POC (按文件名或产品名)
+    'rate': 0.0,           # 新主机扫描速率上限 (次/秒); 0 表示不限速
+    'retries': 0,          # HTTP 指纹探测失败时的额外重试次数
+    'retry_delay': 0.0,    # 每次重试前的等待秒数
+    'report_html': False,  # 是否额外生成 HTML 汇总报告
 
     # file & dir
     'log': 'log.txt',
@@ -32,6 +36,7 @@ _config = {
     'vulnerable': 'results.csv',
     'not_vulnerable_json': 'not_vulnerable.json',
     'vulnerable_json': 'results.json',
+    'report_html_file': 'report.html',
     'snapshots': 'snapshots',
 
     # wechat
@@ -59,7 +64,7 @@ def get_config(args=None):
     Rule = namedtuple('Rule', ['product', 'path', 'val'])
     with open(os.path.join(os.path.dirname(__file__), 'rules.csv'), 'r') as f:
         for line in [l.strip() for l in f if l.strip()]:
-            product, path, val = line.split(',')
+            product, path, val = line.split(',', 2)
             _config['rules'].add(Rule(product, path, val))
             _config['product'][product] = product
 
