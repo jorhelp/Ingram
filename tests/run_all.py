@@ -21,6 +21,7 @@ IN_PROCESS = [
     'tests.test_output',
     'tests.test_loader',
     'tests.test_report',
+    'tests.test_findings',
 ]
 STANDALONE = [
     'tests/test_integration.py',

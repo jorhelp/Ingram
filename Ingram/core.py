@@ -41,6 +41,27 @@ def _read_json_rows(json_file):
     return rows
 
 
+LEVEL_LABEL = {'高': 'HIGH', '中': 'MEDIUM', '低': 'LOW'}
+
+
+def build_findings(vuln_names, poc_meta):
+    """A partire dai nomi dei POC trovati e da una mappa nome -> (level, desc),
+    produce una lista ordinata e deduplicata di (severità, nome, descrizione)
+    per la sezione FINDINGS del report."""
+    seen = set()
+    details = []
+    for vul_name in vuln_names:
+        if vul_name in seen:
+            continue
+        seen.add(vul_name)
+        level, desc = poc_meta.get(vul_name, ('', ''))
+        desc = ' '.join((desc or '').split())
+        if len(desc) > 200:
+            desc = desc[:197] + '...'
+        details.append((LEVEL_LABEL.get(level, level or '?'), vul_name, desc))
+    return details
+
+
 def read_result_rows(csv_file, json_file, fmt='csv'):
     """读取漏洞结果, 返回 (product, poc) 列表
 
@@ -78,6 +99,12 @@ class Core:
         if not items:
             return
 
+        # mappa nome_poc -> (severità, descrizione) per arricchire il report
+        poc_meta = {}
+        for pocs in self.poc_dict.values():
+            for poc in pocs:
+                poc_meta[poc.name] = (getattr(poc, 'level', ''), getattr(poc, 'desc', '') or '')
+
         results = defaultdict(lambda: defaultdict(lambda: 0))
         for product, vul in items:
             dev = product.split('-')[0]
@@ -96,6 +123,18 @@ class Core:
                 print(color.green(f"{vul_name:>18} | {'▥' * block_num} {vul_count}"))
         print(color.yellow(f"{'sum: ' + str(results_sum):>46}", 'bright'), flush=True)
         print('-' * 46)
+
+        # dettaglio per falla: severità + cosa consente (dai campi level/desc dei POC)
+        vuln_names = [vul_name for dev in results for vul_name in results[dev]]
+        details = build_findings(vuln_names, poc_meta)
+        if details:
+            print('\n')
+            print('-' * 18, 'FINDINGS', '-' * 18)
+            for label, vul_name, desc in details:
+                print(color.red(f"[{label}] {vul_name}", 'bright'))
+                if desc:
+                    print(color.white(f"    {desc}"))
+            print('-' * 46)
         print('\n')
 
     def _scan_port(self, ip, port):
