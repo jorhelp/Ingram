@@ -47,7 +47,8 @@ class DahuaWeakPassword(POCTemplate):
                     "session": 0,
                 }
                 try:
-                    r = self.session.post(url, headers=headers, json=_json, verify=False, timeout=self.config.timeout)
+                    # 使用独立 requests.post 而非 self.session，避免 cookie 残留干扰后续 Digest Auth 快照
+                    r = requests.post(url, headers=headers, json=_json, verify=False, timeout=self.config.timeout)
                     if r.status_code == 200 and r.json()['result'] == True:
                         return ip, str(port), self.product, user, password, self.name
                 except Exception as e:
