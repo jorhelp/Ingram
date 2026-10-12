@@ -50,12 +50,18 @@ class POCTemplate:
     def _snapshot(self, url, img_file_name, auth=None) -> int:
         """下载 url 处的图片并保存到 file_name
         通过设置 stream=True 来友好地下载较大的媒体文件
+        
+        当有 auth（如 HTTPDigestAuth）时，使用独立 requests.get，
+        避免 self.session 残留的 cookie 干扰 Digest Auth 认证（大华设备的坑）。
         """
         img_path = os.path.join(self.config.out_dir, self.config.snapshots, img_file_name)
         try:
             if auth:
-                res = self.session.get(url, auth=auth, timeout=self.config.timeout, verify=False, stream=True)
+                # 有认证 → 独立请求，确保干净，跟旧版行为一致
+                res = requests.get(url, auth=auth, timeout=self.config.timeout, verify=False,
+                                   stream=True, headers={'Connection': 'close', 'User-Agent': self.config.user_agent})
             else:
+                # 无认证 → 用 session（可利用 keep-alive）
                 res = self.session.get(url, timeout=self.config.timeout, verify=False, stream=True)
             if res.status_code == 200 and 'head' not in res.text:
                 with open(img_path, 'wb') as f:
