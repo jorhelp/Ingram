@@ -12,27 +12,27 @@
     <img alt="Languages Count" src="https://img.shields.io/github/languages/count/jorhelp/Ingram?style=social">
 </div>
 
-简体中文 | [English](https://github.com/jorhelp/Ingram/blob/master/README.en.md)
+English | [简体中文](https://github.com/jorhelp/Ingram/blob/master/README.md)
 
-## 简介
+## Intro
 
-主要针对网络摄像头的漏洞扫描框架，目前已集成海康、大华、宇视、dlink等常见设备
+This is a web camera device vulnerability scanning tool, which already supports Hikvision, Dahua and other devices
 
 <div align=center>
     <img alt="run" src="https://github.com/jorhelp/imgs/blob/master/Ingram/run_time.gif">
 </div>
 
 
-## 安装
+## Installation
 
-**请在 Linux 或 Mac 系统使用，确保安装了3.8及以上版本的Python，尽量不要使用3.11，因为对许多包的兼容不是很好**
+**Please run it under Linux or Mac. Please make sure you have installed Python >= 3.8, but 3.11 is not recommended.**
 
-+ 克隆该仓库:
++ Firstly, clone this repo:
 ```bash
 git clone https://github.com/jorhelp/Ingram.git
 ```
 
-+ 进入项目目录，创建一个虚拟环境，并激活该环境：
++ Then, go to the repo dir, create a virtual environment and activate it:
 ```bash
 cd Ingram
 pip3 install virtualenv
@@ -40,56 +40,51 @@ python3 -m virtualenv venv
 source venv/bin/activate
 ```
 
-+ 安装依赖:
++ After that, install dependencies:
 ```bash
 pip3 install -r requirements.txt
 ```
 
-至此安装完毕！
+So far, it has been installed!
 
 
-## 运行
+## Run
 
-+ 由于是在虚拟环境中配置，所以，每次运行之前，请先激活虚拟环境：`source venv/bin/activate`
++ Since it is configured in a virtual environment, pls activate the virtual environment before each running
 
-+ 你需要准备一个目标文件，比如 targets.txt，里面保存着你要扫描的 IP 地址，每行一个目标，具体格式如下：
++ You need to prepare an target file, let's name it `input`, which contains the targets that will be scanned. The content of `input` file can be:
 ```
-# 你可以使用井号(#)来进行注释
+# use '#' to comment
 
-# 单个的 IP 地址
+# single ip
 192.168.0.1
 
-# IP 地址以及要扫描的端口
+# ip with a port
 192.168.0.2:80
 
-# 带 '/' 的IP段
+# ip segment ('/')
 192.168.0.0/16
 
-# 带 '-' 的IP段
+# ip segment ('-')
 192.168.0.0-192.168.255.255
 ```
 
-+ 有了目标文件之后就可直接运行:
++ With the `input` file, let's start scanning:
 ```bash
-python3 run_ingram.py -i 你要扫描的文件 -o 输出文件夹
+python3 run_ingram.py -i input -o output
 ```
 
-+ 端口：
-如果target.txt文件中指定了目标的端口，比如: 192.168.6.6:8000，那么会扫描该目标的8000端口 
-
-否则的话，默认只扫描常见端口(定义在 `Ingram/config.py` 中)，若要批量扫描其他端口，需自行指定，例如：
++ If you specified the port like: `x.x.x.x:80`, then the port 80 will be scanned, otherwise common ports will be scanned(defined in `Ingram/config.py`). And you can also override it with the `-p` argument such as:
 ```bash
-python3 run_ingram.py -i 你要扫描的文件 -o 输出文件夹 -p 80 81 8000
+python3 run_ingram.py -i input -o output -p 80 81 8000
 ```
 
-+ 默认并发数目为 300，可以根据机器配置及网速通过 `-t` 参数来自行调控：
++ The number of coroutines can be controlled by the `-t` argument:
 ```bash
-python3 run_ingram.py -i 你要扫描的文件 -o 输出文件夹 -t 500
+python3 run_ingram.py -i input -o output -t 500
 ```
 
-+ 支持中断恢复，不过并不会实时记录当前运行状态，而是间隔一定时间，所以并不能准确恢复到上次的运行状态。如果扫描因为网络或异常而中断，可以通过重复执行上次的扫描命令来继续扫描
-
-+ 所有参数：
++ all arguments：
 ```
 optional arguments:
   -h, --help            show this help message and exit
@@ -109,28 +104,20 @@ optional arguments:
 ```
 
 
-## 端口扫描器
+## Port scanner
 
-+ 我们可以利用强大的端口扫描器来获取活动主机，进而缩小 Ingram 的扫描范围，提高运行速度，具体做法是将端口扫描器的结果文件整理成 `ip:port` 的格式，并作为 Ingram 的输入
++ We can use powerful port scanner to obtain active hosts, thereby reducing the scanning range of Ingram and improving the running speed. The specific method is to organize the result file of the port scanner into the format of `ip:port` and use it as the input file of Ingram
 
-+ 这里以 masscan 为例简单演示一下（masscan 的详细用法这里不再赘述），首先用 masscan 扫描 80 或 8000-8008 端口存活的主机：`masscan -p80,8000-8008 -iL 目标文件 -oL 结果文件 --rate 8000`
++ Here is a brief demonstration of masscan as an example (the detailed usage of masscan will not be repeated here).
 
-+ masscan 运行完之后，将结果文件整理一下：`grep 'open' 结果文件 | awk '{printf"%s:%s\n", $4, $3}' > targets.txt`
++ First, use masscan to scan the surviving host on port 80 or 8000-8008 (you sure can change the port anything else if you want): `masscan -p80,8000-8008 -iL INPUT -oL OUTPUT --rate 8000`
 
-+ 之后对这些主机进行扫描：`python run_ingram.py -i targets.txt -o out`
++ After masscan is done, sort out the result file: `grep 'open' OUTPUT | awk '{printf"%s:%s\n", $4, $3}' > input`
 
-
-## ~~微信提醒~~(已移除)
-
-+ (**可选**) 扫描时间可能会很长，如果你想让程序扫描结束的时候通过微信发送一条提醒的话，你需要按照 [wxpusher](https://wxpusher.zjiecode.com/docs/) 的指示来获取你的专属 *UID* 和 *APP_TOKEN*，并将其写入 `run_ingram.py`:
-```python
-# wechat
-config.set_val('WXUID', '这里写uid')
-config.set_val('WXTOKEN', '这里写token')
-```
++ Then: `python run_ingram.py -i input -o output`
 
 
-## 结果
+## Output
 
 ```bash
 .
@@ -140,41 +127,30 @@ config.set_val('WXTOKEN', '这里写token')
 └── log.txt
 ```
 
-+ `results.csv` 里保存了完整的结果, 格式为: `ip,端口,设备类型,用户名,密码,漏洞条目`:  
++ `results.csv` contains the vulnerable devices: `ip,port,device-type,user,password,vul`: 
 
 <div align=center>
     <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/results.png">
 </div>
 
-+ `not_vulnerable.csv` 中保存的是没有暴露的设备
++ `not_vulnerable.csv` contains the not vulnerable devices
 
-+ `snapshots` 中保存了部分设备的快照:  
++ `snapshots` contains some snapshots of a part of devices (not all device can have a snapshot!!!):  
 
 <div align=center>
     <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/snapshots.png">
 </div>
 
 
-## ~~实时预览~~ (由于部分原因已移除)
+## Warning
 
-+ ~~可以直接通过浏览器登录来预览~~
-  
-+ ~~如果想批量查看，我们提供了一个脚本 `show/show_rtsp/show_all.py`，不过它还有一些问题:~~
-
-<div align=center>
-    <img alt="Ingram" src="https://github.com/jorhelp/imgs/blob/master/Ingram/show_rtsp.png">
-</div>
+This tool is for security testing only, it is strictly prohibited to use it for illegal purposes, and the consequences have nothing to do with this team.
 
 ## 开发计划
 * [ ] 利用 [GeoIP](https://dev.maxmind.com/geoip/updating-databases) 实现可以交互式选择机将扫描的地理区域
 * [ ] 实现分布式扫描
 
-## 免责声明
-
-本工具仅供安全测试，严禁用于非法用途，后果与本团队无关
-
-
-## 鸣谢 & 引用
+## Thanks & Reference
 
 Thanks to [Aiminsun](https://github.com/Aiminsun/CVE-2021-36260) for CVE-2021-36260  
 Thanks to [chrisjd20](https://github.com/chrisjd20/hikvision_CVE-2017-7921_auth_bypass_config_decryptor) for hidvision config file decryptor  
